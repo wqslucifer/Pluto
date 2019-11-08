@@ -55,6 +55,10 @@ class ProjectWidget(QWidget):
         # bg translucent
         self.setStyleSheet("background-color: rgba(0,0,0,0)")
 
+        self.projectName.setFont(QFont('Arial', 12, QFont.Black))
+        self.projectLocation.setFont(QFont('Arial', 10, QFont.Thin))
+        self.lastOpenTime.setFont(QFont('Arial', 10))
+
     def paintEvent(self, ev):
         path = QPainterPath()
         painter = QPainter(self)
@@ -476,7 +480,7 @@ class RollingLabel(QLabel):
 
     def initLabel(self):
         self.stepTime = 100
-        self.stepWidth = 2
+        self.stepWidth = 3
         self.curIndex = 0
         self.scrollTimer.timeout.connect(self.updateIndex)
 

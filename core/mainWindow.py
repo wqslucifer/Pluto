@@ -27,7 +27,8 @@ import warnings
 warnings.filterwarnings('ignore')
 
 PROJECT_HOME = 'E:/project/Pluto/test'  # path to default project dirs
-PROJECT_PATHS = ['E:/project/Pluto/test/testProject_1/project.pluto']  # project paths that are added to pluto
+PROJECT_PATHS = ['E:/project/Pluto/test/testProject_1/project.pluto',
+                 'E:/project/Pluto/test/testProject_2/project2.pluto']  # project paths that are added to pluto
 
 
 class mainWindow(QMainWindow):
