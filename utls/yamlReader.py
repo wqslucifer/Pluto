@@ -1,6 +1,7 @@
 import yaml
 import os
 import logging
+import datetime
 
 logging.basicConfig()
 
@@ -18,7 +19,7 @@ class ProjectReader(object):
         self.__projectPath = None
         self.__createTime = None
         self.__lastAccessTime = None
-        self.__projectFiles = None
+        self.__projectFiles = None  # dict
         self.loadProject(yamlFile)
         self.__logger = logging.getLogger('debug')
         self.__logger.setLevel(logging.DEBUG)
@@ -84,6 +85,32 @@ class ProjectReader(object):
     @property
     def projectFiles(self):
         return self.__projectFiles
+
+    def setLastAccessTime(self, time: datetime):
+        # set property
+        self.__lastAccessTime = time
+        self.updateToYamlDict()
+
+    def setProjectName(self, name: str):
+        self.__projectName = name
+        self.updateToYamlDict()
+
+    def setProjectPath(self, path: str):
+        self.__projectPath = path
+        self.updateToYamlDict()
+
+    def setProjectFiles(self, files: dict):
+        self.__projectFiles = files
+        self.updateToYamlDict()
+
+    def updateToYamlDict(self):  # TODO
+        # update information to yaml dict
+        pass
+
+    def saveToYaml(self):  # TODO
+        # save yaml dict to project file
+        pass
+
 
 
 if __name__ == '__main__':

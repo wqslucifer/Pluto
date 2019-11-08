@@ -41,6 +41,7 @@ class mainWindow(QMainWindow):
         ###############################
         # local variables
         self.defaultDir = '.'
+        self.curOpenProjectHandle = None
         ###############################
         # menu
         openProjectMenu = self.ui.actionOpen_Project
@@ -142,15 +143,33 @@ class mainWindow(QMainWindow):
             projectItem.triggered.connect(self.openProject)
             self.projectListLayout.addWidget(projectItem)
 
-    def openProject(self, ProjectReader):
+    def openProject(self, ProjectReader):  # TODO
         print('open project:', ProjectReader.projectName)
+        self.curOpenProjectHandle = ProjectReader
 
-    def openProjectDialog(self):
+    def saveProject(self):  # TODO
+        pass
+
+    def changeProjectName(self):  # TODO
+        pass
+
+    def updateProjectLastAccessTime(self):  # TODO
+        pass
+
+    def addFileToProject(self):  # TODO
+        pass
+
+    def delFileFromProject(self):  # TODO
+        pass
+
+    def openProjectDialog(self):  #TODO
         dialog = QFileDialog(self)
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         dialog.setDirectory(self.defaultDir)
         projectFile, _ = dialog.getOpenFileName(self, "Open Project", "",
                                                 "Project File (*.pluto);;All Files (*.*)", options=options)
-        if len(projectFile):
+        if projectFile:
             self.openProject(projectFile)
+        else:
+            raise Exception('Open project failed')
