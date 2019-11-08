@@ -5,16 +5,19 @@ from PyQt5.QtWidgets import QLabel, QGridLayout, QWidget, QDialog, QHBoxLayout, 
     QSizePolicy, QStackedWidget, QScrollBar, QScrollArea, QTreeView, QSplitter, QStylePainter, QStyle, \
     QStyleOptionButton, QTableView
 from PyQt5.QtCore import Qt, QPoint, QRectF, pyqtSignal, QSortFilterProxyModel, \
-    QModelIndex, QMimeData, QAbstractTableModel, QVariant
+    QModelIndex, QMimeData, QAbstractTableModel, QVariant, QTimer, pyqtSlot, pyqtProperty
 from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QPainterPath, QIcon, \
     QMouseEvent, QStandardItemModel, QPaintEvent, QImage, QPixmap, QDrag, QDragEnterEvent, QDragMoveEvent, QTextOption, \
     QDropEvent
 
+from utls.yamlReader import ProjectReader
+
 
 class ProjectWidget(QWidget):
     # signal
-    triggered = pyqtSignal(list)
-    def __init__(self, projectName, projectLocation, lastOpenTime, projectFiles):
+    triggered = pyqtSignal(ProjectReader)
+
+    def __init__(self, projectName, projectLocation, lastOpenTime, projectHandle):
         super(ProjectWidget, self).__init__()
         self.setFixedSize(180, 180)
         self.mainLayout = QGridLayout(self)
@@ -28,9 +31,11 @@ class ProjectWidget(QWidget):
 
         # project info
         self.projectName = QLabel(projectName)
-        self.projectLocation = QLabel(projectLocation)
-        self.lastOpenTime = QLabel(lastOpenTime)
-        self.projectFile = projectFiles
+        self.projectLocation = RollingLabel(self)
+        self.projectLocation.showScrollText(projectLocation)
+        self.lastOpenTime = RollingLabel(self)
+        self.lastOpenTime.showScrollText(lastOpenTime)
+        self.projectHandle = projectHandle
         self.initUI()
 
     def initUI(self):
@@ -77,7 +82,7 @@ class ProjectWidget(QWidget):
         if MouseEvent.button() == Qt.RightButton:
             print('right click menu')
         elif MouseEvent.button() == Qt.LeftButton:
-            self.triggered.emit(self.projectFile)
+            self.triggered.emit(self.projectHandle)
 
     def setColorSet(self, normColor, enterColor, pressColor):
         self.normColor = QColor(normColor)
@@ -454,3 +459,40 @@ class DragTableView(QTableView):
         # update height when adding rows to empty model
         self.itemRowHeight = self.rowHeight(0) if not self.model.checkEmpty() else None
         self.headerHeight = self.horizontalHeader().sectionSizeFromContents(0).height()
+
+
+class RollingLabel(QLabel):
+    def __init__(self, parent=None):
+        super(RollingLabel, self).__init__(parent=parent)
+        self.stepWidth = None
+        self.stepTime = None
+        self.curIndex = None
+        self.showText = None
+        self.scrollTimer = QTimer(self)
+
+        self.setFixedWidth(150)
+        self.setFixedHeight(20)
+        self.initLabel()
+
+    def initLabel(self):
+        self.stepTime = 100
+        self.stepWidth = 2
+        self.curIndex = 0
+        self.scrollTimer.timeout.connect(self.updateIndex)
+
+    def showScrollText(self, text):
+        if self.scrollTimer.isActive():
+            self.scrollTimer.stop()
+        self.showText = text
+        self.scrollTimer.start(self.stepTime)
+
+    def updateIndex(self):
+        self.update()
+        self.curIndex += 1
+        if self.curIndex * self.stepWidth > self.width():
+            self.curIndex = 0
+
+    def paintEvent(self, event: QPaintEvent):
+        painter = QPainter(self)
+        painter.drawText(0 - self.stepWidth * self.curIndex, 15, self.showText[self.curIndex:])
+        painter.drawText(self.width() - self.stepWidth * self.curIndex, 15, self.showText[:self.curIndex])

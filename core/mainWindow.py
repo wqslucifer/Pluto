@@ -18,11 +18,16 @@ from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkRepl
 from PyQt5.uic import loadUi
 
 from core.customLayout import FlowLayout
-from core.customWidget import ProjectWidget, CollapsibleTabWidget
+from core.customWidget import ProjectWidget, CollapsibleTabWidget, RollingLabel
+
+from utls.yamlReader import ProjectReader
 
 import warnings
 
 warnings.filterwarnings('ignore')
+
+PROJECT_HOME = 'E:/project/Pluto/test'  # path to default project dirs
+PROJECT_PATHS = ['E:/project/Pluto/test/testProject_1/project.pluto']  # project paths that are added to pluto
 
 
 class mainWindow(QMainWindow):
@@ -87,8 +92,8 @@ class mainWindow(QMainWindow):
         self.horizontal_splitter.setCollapsible(0, False)
         self.horizontal_splitter.setCollapsible(1, False)
 
-        self.vertical_splitter.setSizes([self.width()*0.22, self.width()*0.78])
-        self.horizontal_splitter.setSizes([self.height()*0.78, self.height()*0.22])
+        self.vertical_splitter.setSizes([self.width() * 0.22, self.width() * 0.78])
+        self.horizontal_splitter.setSizes([self.height() * 0.78, self.height() * 0.22])
 
         self.mainWidgetLayout.addWidget(self.horizontal_splitter)
         self.bottomStage.setLayout(self.bottomLayout)
@@ -99,9 +104,9 @@ class mainWindow(QMainWindow):
         self.leftStage.addTab(self.leftTreeView, 'File')
 
         # setup bottom stage
-        #self.bottomStage.setTabPosition(QTabWidget.South)
+        # self.bottomStage.setTabPosition(QTabWidget.South)
         self.bottomTabWidget.addTab(self.bottomOutputView, 'Output')
-        self.bottomLayout.setContentsMargins(20,0,0,0)
+        self.bottomLayout.setContentsMargins(20, 0, 0, 0)
         # init main stage
         self.initProjectList()
 
@@ -123,12 +128,21 @@ class mainWindow(QMainWindow):
 
         self.mainLayout.addWidget(self.scrollarea)
 
-        projectItem = ProjectWidget('project name', 'project location', 'time', [])
-        projectItem.triggered.connect(self.openProject)
-        self.projectListLayout.addWidget(projectItem)
+        # init projects from PROJECT_PATHS
+        projectHandleList = []
+        # projectItemList = []
+        for projectPath in PROJECT_PATHS:
+            projectHandle = ProjectReader(projectPath)
+            projectHandleList.append(projectHandle)
 
-    def openProject(self, projectFiles):
-        print('open project:', projectFiles)
+            # projectName, projectLocation, lastOpenTime, projectFiles
+            projectItem = ProjectWidget(projectHandle.projectName, projectHandle.projectPath, \
+                                        projectHandle.lastAccessTime, projectHandle)
+            projectItem.triggered.connect(self.openProject)
+            self.projectListLayout.addWidget(projectItem)
+
+    def openProject(self, ProjectReader):
+        print('open project:', ProjectReader.projectName)
 
     def openProjectDialog(self):
         dialog = QFileDialog(self)
