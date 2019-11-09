@@ -1,17 +1,17 @@
-projectName: testProject_1
-projectPath: 'E:\project\Pluto\test\testProject_1'
-createTime: 2018-01-03t21:59:43.10-06:00
-lastAccessTime: 2018-12-03t21:59:43.10-06:00
+createTime: 2018-01-03 21:59:43
+lastAccessTime: 2019-11-09 22:23:43.079325
 projectFiles:
   root:
     testProject_1:
-      - data:
-        - 'dataFile1'
-      - model:
-        - 'modelFile1'
-      - script:
-        - 'script1'
-      - 'project.pluto'
-      - 'delFile.1'
-      - delFile_2:
-        - 'delfile_3'
+    - data:
+      - dataFile1
+    - model:
+      - modelFile1
+    - script:
+      - script1
+    - project.pluto
+    - delFile.1
+    - delFile_2:
+      - delfile_3
+projectName: testProject_1
+projectPath: E:\project\Pluto\test\testProject_1

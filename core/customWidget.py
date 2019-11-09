@@ -1,5 +1,7 @@
 import os
 import sys
+
+from datetime import datetime, timezone, time, date
 from PyQt5.QtWidgets import QLabel, QGridLayout, QWidget, QDialog, QHBoxLayout, QApplication, QToolBar, QPushButton, \
     QVBoxLayout, \
     QSizePolicy, QStackedWidget, QScrollBar, QScrollArea, QTreeView, QSplitter, QStylePainter, QStyle, \
@@ -33,9 +35,19 @@ class ProjectWidget(QWidget):
         self.projectName = QLabel(projectName)
         self.projectLocation = RollingLabel(self)
         self.projectLocation.showScrollText(projectLocation)
-        self.lastOpenTime = RollingLabel(self)
-        self.lastOpenTime.showScrollText(lastOpenTime)
+        self.projectLocation.setToolTip(projectLocation)
+        self.projectLocation.setStatusTip('Project Location: ' + projectLocation)
+
+        # self.projectLastOpenTime = RollingLabel(self)
+        # self.projectLastOpenTime.showScrollText()
+        self.localTime = lastOpenTime.replace(tzinfo=timezone.utc).astimezone(tz=None)
+        self.projectLastOpenTime = QLabel('Last Open: ' + self.localTime.strftime('%y/%m/%d %H:%M:%S'))
+        self.projectLastOpenTime.setToolTip(self.localTime.strftime('%y/%m/%d %H:%M:%S'))
+        self.projectLastOpenTime.setStatusTip('Last Open Time: ' + self.localTime.strftime('%y/%m/%d %H:%M:%S'))
+
+        # project yaml handle
         self.projectHandle = projectHandle
+
         self.initUI()
 
     def initUI(self):
@@ -45,7 +57,7 @@ class ProjectWidget(QWidget):
         self.mainLayout.setContentsMargins(18, 18, 0, 0)
         self.mainLayout.addWidget(self.projectName, 0, 0, Qt.AlignTop)
         self.mainLayout.addWidget(self.projectLocation, 1, 0)
-        self.mainLayout.addWidget(self.lastOpenTime, 2, 0)
+        self.mainLayout.addWidget(self.projectLastOpenTime, 2, 0)
         self.mainLayout.setRowStretch(3, 10)
         # set color set
         self.setColorSet(**self.ColorSet)
@@ -57,7 +69,8 @@ class ProjectWidget(QWidget):
 
         self.projectName.setFont(QFont('Arial', 12, QFont.Black))
         self.projectLocation.setFont(QFont('Arial', 10, QFont.Thin))
-        self.lastOpenTime.setFont(QFont('Arial', 10))
+        self.projectLastOpenTime.setFont(QFont('Arial', 10))
+        self.projectLastOpenTime.setMaximumWidth(self.width() - 35)
 
     def paintEvent(self, ev):
         path = QPainterPath()

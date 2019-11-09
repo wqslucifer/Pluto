@@ -3,6 +3,8 @@ import sys
 import time
 import json
 
+from datetime import datetime, timezone, time
+
 from PyQt5.QtCore import QUrl, QObject, pyqtSlot, QUrlQuery, QByteArray, Qt, QJsonDocument, \
     qDebug, pyqtSignal, QVariant, QEvent, QFile, QIODevice, QDir, QAbstractItemModel, QSize
 
@@ -46,6 +48,8 @@ class mainWindow(QMainWindow):
         # menu
         openProjectMenu = self.ui.actionOpen_Project
         openProjectMenu.triggered.connect(self.openProjectDialog)
+        saveProjectMenu = self.ui.actionSave_Project
+        saveProjectMenu.triggered.connect(self.saveProject)
         ###############################
         # init toolbar status bar
         self.toolBar = QToolBar(self)
@@ -143,18 +147,31 @@ class mainWindow(QMainWindow):
             projectItem.triggered.connect(self.openProject)
             self.projectListLayout.addWidget(projectItem)
 
-    def openProject(self, ProjectReader):  # TODO
-        print('open project:', ProjectReader.projectName)
-        self.curOpenProjectHandle = ProjectReader
+    def openProject(self, handle: ProjectReader):
+        print('open project:', handle.projectName)
+        self.curOpenProjectHandle = handle
+        self.updateProjectLastAccessTime()
+
+    def closeProject(self):  # TODO
+        pass
 
     def saveProject(self):  # TODO
-        pass
+        print('save project')
+        if not self.curOpenProjectHandle:
+            QMessageBox.information(self, 'Save Project', 'No open project', QMessageBox.Ok)
+        else:
+            self.curOpenProjectHandle.saveToYaml()
+            QMessageBox.information(self, 'Save Project', 'Project Saved to ' + self.curOpenProjectHandle.yamlFile,
+                                    QMessageBox.Ok)
 
-    def changeProjectName(self):  # TODO
-        pass
+    def changeProjectName(self, name):
+        self.curOpenProjectHandle.setProjectName(name)
+        self.curOpenProjectHandle.updateToYamlDict()
 
-    def updateProjectLastAccessTime(self):  # TODO
-        pass
+    def updateProjectLastAccessTime(self):
+        currentTime = datetime.utcnow()
+        self.curOpenProjectHandle.setLastAccessTime(currentTime)
+        self.curOpenProjectHandle.updateToYamlDict()
 
     def addFileToProject(self):  # TODO
         pass
@@ -162,7 +179,7 @@ class mainWindow(QMainWindow):
     def delFileFromProject(self):  # TODO
         pass
 
-    def openProjectDialog(self):  #TODO
+    def openProjectDialog(self):
         dialog = QFileDialog(self)
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog

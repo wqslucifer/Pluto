@@ -15,10 +15,12 @@ logging.basicConfig()
 
 class ProjectReader(object):
     def __init__(self, yamlFile):
+        self.yamlFile = yamlFile
+        self.__raw_project = None
         self.__projectName = None
         self.__projectPath = None
-        self.__createTime = None
-        self.__lastAccessTime = None
+        self.__createTime = None  # using utc time
+        self.__lastAccessTime = None  # using utc time
         self.__projectFiles = None  # dict
         self.loadProject(yamlFile)
         self.__logger = logging.getLogger('debug')
@@ -57,18 +59,18 @@ class ProjectReader(object):
     def loadProject(self, yamlFile:str):
         with open(yamlFile, 'r') as f:
             try:
-                raw_project = yaml.safe_load(f)
-                self.__projectName = raw_project['projectName']
-                self.__projectPath = raw_project['projectPath']
-                self.__createTime = raw_project['createTime']
-                self.__lastAccessTime = raw_project['lastAccessTime']
-                self.__projectFiles = raw_project['projectFiles']
+                self.__raw_project = yaml.safe_load(f)
+                self.__projectName = self.__raw_project['projectName']
+                self.__projectPath = self.__raw_project['projectPath']
+                self.__createTime = self.__raw_project['createTime']
+                self.__lastAccessTime = self.__raw_project['lastAccessTime']
+                self.__projectFiles = self.__raw_project['projectFiles']
             except yaml.YAMLError:
                 self.__logger.error('yaml file error: ' + yamlFile)
 
     @property
     def lastAccessTime(self):
-        return self.__lastAccessTime.strftime('%d/%m/%y %H:%M:%S')
+        return self.__lastAccessTime
 
     @property
     def createTime(self):
@@ -103,16 +105,22 @@ class ProjectReader(object):
         self.__projectFiles = files
         self.updateToYamlDict()
 
-    def updateToYamlDict(self):  # TODO
+    def updateToYamlDict(self):
         # update information to yaml dict
-        pass
+        self.__raw_project['lastAccessTime'] = self.__lastAccessTime
+        self.__raw_project['projectName'] = self.__projectName
+        self.__raw_project['projectPath'] = self.__projectPath
+        self.__raw_project['projectFiles'] = self.__projectFiles
 
-    def saveToYaml(self):  # TODO
+    def saveToYaml(self):
         # save yaml dict to project file
-        pass
+        with open(self.yamlFile, 'w') as f:
+            yaml.safe_dump(self.__raw_project, f, default_flow_style=False)
 
 
 
 if __name__ == '__main__':
     p = ProjectReader('../test/testProject_1/project.pluto')
     p.checkFileTree()
+
+    p.saveToYaml()
