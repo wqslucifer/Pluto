@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import json
+import gc
 
 from datetime import datetime, timezone, time
 
@@ -23,6 +24,7 @@ from core.customLayout import FlowLayout
 from core.customWidget import ProjectWidget, CollapsibleTabWidget, RollingLabel
 
 from utls.yamlReader import ProjectReader
+from utls.structure import Queue, ProjectQueue
 
 import warnings
 
@@ -44,6 +46,7 @@ class mainWindow(QMainWindow):
         # local variables
         self.defaultDir = '.'
         self.curOpenProjectHandle = None
+        self.openedProject = ProjectQueue()
         ###############################
         # menu
         openProjectMenu = self.ui.actionOpen_Project
@@ -55,6 +58,8 @@ class mainWindow(QMainWindow):
         self.toolBar = QToolBar(self)
         self.statusBar = QStatusBar(self)
         self.openAction = QAction(QIcon('res/Open.ico'), 'Open Project', self)
+        self.homePageAction = QAction(QIcon('res/homepage.png'), 'HOME', self)
+        self.projectAction = QAction(QIcon('res/ProjectManager.ico'), 'Project Manager', self)
         ###############################
         # init widgets
         self.leftStage = QTabWidget(self)
@@ -125,6 +130,14 @@ class mainWindow(QMainWindow):
         self.openAction.triggered.connect(self.openProjectDialog)
         self.toolBar.addAction(self.openAction)
 
+        self.homePageAction.setStatusTip('Home Page')
+        self.homePageAction.triggered.connect(self.jumpToHomePage)
+        self.toolBar.addAction(self.homePageAction)
+
+        self.projectAction.setStatusTip('Project Manager')
+        self.projectAction.triggered.connect(self.showOpenProject)
+        self.toolBar.addAction(self.projectAction)
+
     def initProjectList(self):
         self.scrollarea.setWidgetResizable(True)
         self.projectList.setLayout(self.projectListLayout)
@@ -148,12 +161,21 @@ class mainWindow(QMainWindow):
             self.projectListLayout.addWidget(projectItem)
 
     def openProject(self, handle: ProjectReader):
-        print('open project:', handle.projectName)
-        self.curOpenProjectHandle = handle
-        self.updateProjectLastAccessTime()
+        if self.openedProject.isExist(handle):
+            QMessageBox.information(self, 'open project', "project \"" + handle.projectName + "\" has been opened")
+        else:
+            print('open project:', handle.projectName)
+            self.openedProject.add(handle)
+            self.mainLayout.addWidget(QWidget(self))
+            self.mainLayout.setCurrentIndex(self.openedProject.currentIndex)
+            self.curOpenProjectHandle = self.openedProject.getHandle(self.openedProject.currentIndex)
+            self.updateProjectLastAccessTime()
 
-    def closeProject(self):  # TODO
-        pass
+    def closeProject(self):
+        if self.curOpenProjectHandle:
+            self.saveProject()
+            self.curOpenProjectHandle = None
+            gc.collect()
 
     def saveProject(self):  # TODO
         print('save project')
@@ -190,3 +212,10 @@ class mainWindow(QMainWindow):
             self.openProject(projectFile)
         else:
             raise Exception('Open project failed')
+
+    def jumpToHomePage(self):
+        self.mainLayout.setCurrentIndex(0)
+
+    def showOpenProject(self):
+        # display a pop menu of current open project
+        pass
