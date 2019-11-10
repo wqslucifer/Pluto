@@ -42,6 +42,7 @@ class mainWindow(QMainWindow):
         self.mainWidget = QWidget(self)
         self.mainWidgetLayout = QVBoxLayout(self.mainWidget)
         self.setCentralWidget(self.mainWidget)
+        self.setWindowIcon(QIcon('res/pluto.png'))
         ###############################
         # local variables
         self.defaultDir = '.'

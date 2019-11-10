@@ -125,19 +125,31 @@ class ProjectReader(object):
 
     def getModels(self):
         modelDir = os.path.join(self.__projectPath, 'model')
-        return modelDir, self.contents['model'] if modelDir else None, self.contents['model']
+        if os.path.exists(modelDir):
+            return modelDir, os.listdir(modelDir)
+        else:
+            return None, []
 
     def getData(self):
         dataDir = os.path.join(self.__projectPath, 'data')
-        return dataDir, self.contents['data'] if dataDir else None, self.contents['data']
+        if os.path.exists(dataDir):
+            return dataDir, os.listdir(dataDir)
+        else:
+            return None, []
 
     def getScripts(self):
         scriptDir = os.path.join(self.__projectPath, 'script')
-        return scriptDir, self.contents['script'] if scriptDir else None, self.contents['script']
+        if os.path.exists(scriptDir):
+            return scriptDir, os.listdir(scriptDir)
+        else:
+            return None, []
 
     def getResults(self):
         resultDir = os.path.join(self.__projectPath, 'result')
-        return resultDir, self.contents['result'] if resultDir else None, self.contents['result']
+        if os.path.exists(resultDir):
+            return resultDir, os.listdir(resultDir)
+        else:
+            return None, []
 
 
 if __name__ == '__main__':
