@@ -19,4 +19,6 @@ if __name__ == '__main__':
         QStyle.alignedRect(Qt.LeftToRight, Qt.AlignCenter, QSize(width, height), app.desktop().availableGeometry()))
     window.show()
     # exceptionHandler.errorSignal.connect(something)
+    app.setStyle("fusion")
+
     sys.exit(app.exec_())

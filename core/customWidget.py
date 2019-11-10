@@ -2,15 +2,15 @@ import os
 import sys
 
 from datetime import datetime, timezone, time, date
-from PyQt5.QtWidgets import QLabel, QGridLayout, QWidget, QDialog, QHBoxLayout, QApplication, QToolBar, QPushButton, \
-    QVBoxLayout, \
-    QSizePolicy, QStackedWidget, QScrollBar, QScrollArea, QTreeView, QSplitter, QStylePainter, QStyle, \
-    QStyleOptionButton, QTableView
-from PyQt5.QtCore import Qt, QPoint, QRectF, pyqtSignal, QSortFilterProxyModel, \
-    QModelIndex, QMimeData, QAbstractTableModel, QVariant, QTimer, pyqtSlot, pyqtProperty
-from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QPainterPath, QIcon, \
-    QMouseEvent, QStandardItemModel, QPaintEvent, QImage, QPixmap, QDrag, QDragEnterEvent, QDragMoveEvent, QTextOption, \
-    QDropEvent
+from PyQt5.QtWidgets import QLabel, QGridLayout, QWidget, QDialog, QHBoxLayout, QApplication, QToolBar, \
+    QPushButton, QVBoxLayout, QStylePainter, QStyleOptionTab, QSizePolicy, QStackedWidget, QScrollBar, \
+    QScrollArea, QTreeView, QSplitter, QStylePainter, QStyle, QStyleOptionButton, QTableView, QTabWidget, \
+    QTabBar
+from PyQt5.QtCore import Qt, QPoint, QRectF, pyqtSignal, QSortFilterProxyModel, QModelIndex, QMimeData, \
+    QAbstractTableModel, QVariant, QTimer, pyqtSlot, pyqtProperty
+from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QPainterPath, QIcon, QMouseEvent, QStandardItemModel, \
+    QPaintEvent, QImage, QPixmap, QDrag, QDragEnterEvent, QDragMoveEvent, QTextOption, \
+    QDropEvent, QPalette
 
 from utls.yamlReader import ProjectReader
 
@@ -215,9 +215,9 @@ class CollapsibleTabWidget(QWidget):
         self.setLayout(self.frameLayout)
         self.tabBarWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
 
-        self.verticalLayout.setContentsMargins(0,0,0,0)
-        self.frameLayout.setContentsMargins(0,0,0,0)
-        self.tabBar.setContentsMargins(0,0,0,0)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.frameLayout.setContentsMargins(0, 0, 0, 0)
+        self.tabBar.setContentsMargins(0, 0, 0, 0)
 
     def initVerticalUI(self):
         self.frameLayout = QHBoxLayout(self)
@@ -513,3 +513,42 @@ class RollingLabel(QLabel):
         painter = QPainter(self)
         painter.drawText(0 - self.stepWidth * self.curIndex, 15, self.showText[self.curIndex:])
         painter.drawText(self.width() - self.stepWidth * self.curIndex, 15, self.showText[:self.curIndex])
+
+
+class ColorfulTabWidget(QTabWidget):
+    def __init__(self, parent=None):
+        super(ColorfulTabWidget, self).__init__(parent=parent)
+        self.colorTabBar = QTabBar(self)
+
+
+class ColorTabBar(QTabBar):
+    def __init__(self, colors, parent=None):
+        super(ColorTabBar, self).__init__(parent)
+        self.mColors = colors
+
+    def paintEvent(self, event):
+        painter = QStylePainter(self)
+        opt = QStyleOptionTab()
+
+        for i in range(self.count()):
+            self.initStyleOption(opt, i)
+            if opt.text in self.mColors:
+                opt.palette.setColor(
+                    QPalette.Button, self.mColors[opt.text]
+                )
+            painter.drawControl(QStyle.CE_TabBarTabShape, opt)
+            painter.drawControl(QStyle.CE_TabBarTabLabel, opt)
+
+
+class ColorTabWidget(QTabWidget):
+    def __init__(self, parent=None):
+        super(ColorTabWidget, self).__init__(parent)
+        d = {
+            "Model: ": QColor("yellow"),
+            "Data: ": QColor("#87ceeb"),
+            "Result: ": QColor("#90EE90"),
+            "Run: ": QColor("pink"),
+            "MainPage": QColor("#800080"),
+            "Script: ": QColor("green"),
+        }
+        self.setTabBar(ColorTabBar(d))

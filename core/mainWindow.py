@@ -21,10 +21,10 @@ from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkRepl
 from PyQt5.uic import loadUi
 
 from core.customLayout import FlowLayout
-from core.customWidget import ProjectWidget, CollapsibleTabWidget, RollingLabel
+from core.customWidget import ProjectWidget, CollapsibleTabWidget, RollingLabel, ColorTabWidget
 
 from utls.yamlReader import ProjectReader
-from utls.structure import Queue, ProjectQueue
+from utls.structure import Queue, ProjectQueue, TabManager
 
 import warnings
 
@@ -47,6 +47,7 @@ class mainWindow(QMainWindow):
         self.defaultDir = '.'
         self.curOpenProjectHandle = None
         self.openedProject = ProjectQueue()
+        self.handleToTabWidget = dict()
         ###############################
         # menu
         openProjectMenu = self.ui.actionOpen_Project
@@ -166,7 +167,11 @@ class mainWindow(QMainWindow):
         else:
             print('open project:', handle.projectName)
             self.openedProject.add(handle)
-            self.mainLayout.addWidget(QWidget(self))
+            tabWidget = ColorTabWidget(self)
+            tabManager = self.initTabWidget(tabWidget, handle)
+            self.handleToTabWidget[handle.yamlFile] = tabManager
+            self.mainLayout.addWidget(tabWidget)
+
             self.mainLayout.setCurrentIndex(self.openedProject.currentIndex)
             self.curOpenProjectHandle = self.openedProject.getHandle(self.openedProject.currentIndex)
             self.updateProjectLastAccessTime()
@@ -237,3 +242,24 @@ class mainWindow(QMainWindow):
     def showProjectPage(self, index):
         # show opened project page using index
         self.mainLayout.setCurrentIndex(index)
+
+    def initTabWidget(self, tabWidget: ColorTabWidget, handle: ProjectReader):
+        tabManager = TabManager(tabWidget, handle)
+        # main page
+        mainPageWidget = QWidget(tabWidget)
+        tabWidget.addTab(mainPageWidget, 'MainPage')
+
+        # models
+        modelRootDir, modelFileList = handle.getModels()
+        tabManager.setModels(modelRootDir, modelFileList)
+        # data
+        dataRootDir, dataFileList = handle.getData()
+        tabManager.setData(dataRootDir, dataFileList)
+        # script
+        scriptRootDir, scriptFileList = handle.getScripts()
+        tabManager.setScripts(scriptRootDir, scriptFileList)
+        # result
+        resultRootDir, resultFileList = handle.getResults()
+        tabManager.setResults(resultRootDir, resultFileList)
+
+        return tabManager

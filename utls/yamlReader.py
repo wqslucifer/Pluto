@@ -29,6 +29,10 @@ class ProjectReader(object):
         # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         # handler.setFormatter(formatter)
         # logger.addHandler(handler)
+        self.checkFileTree()
+        fileTree = self.__projectFiles['root']
+        key = list(fileTree.keys())[0]
+        self.contents = fileTree[key]
 
     def checkFileTree(self):
         fileTree = self.__projectFiles['root']
@@ -37,6 +41,8 @@ class ProjectReader(object):
         curPath = os.path.join(self.__projectPath)
         self.checkDirs(curPath, contents)
         self.__logger.debug(self.__projectFiles)
+        self.__projectFiles['root'][key] = contents
+        self.updateToYamlDict()
 
     def checkDirs(self, curPath, contents):
         self.__logger.debug([curPath, contents])
@@ -117,10 +123,24 @@ class ProjectReader(object):
         with open(self.yamlFile, 'w') as f:
             yaml.safe_dump(self.__raw_project, f, default_flow_style=False)
 
+    def getModels(self):
+        modelDir = os.path.join(self.__projectPath, 'model')
+        return modelDir, self.contents['model'] if modelDir else None, self.contents['model']
+
+    def getData(self):
+        dataDir = os.path.join(self.__projectPath, 'data')
+        return dataDir, self.contents['data'] if dataDir else None, self.contents['data']
+
+    def getScripts(self):
+        scriptDir = os.path.join(self.__projectPath, 'script')
+        return scriptDir, self.contents['script'] if scriptDir else None, self.contents['script']
+
+    def getResults(self):
+        resultDir = os.path.join(self.__projectPath, 'result')
+        return resultDir, self.contents['result'] if resultDir else None, self.contents['result']
 
 
 if __name__ == '__main__':
     p = ProjectReader('../test/testProject_1/project.pluto')
     p.checkFileTree()
-
-    p.saveToYaml()
+    print(p.projectFiles)
