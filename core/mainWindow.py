@@ -13,7 +13,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.Qt import QSplitter, QFrame
 
-from PyQt5.QtGui import QResizeEvent, QIcon
+from PyQt5.QtGui import QResizeEvent, QIcon, QCursor
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtQuickWidgets import QQuickWidget
 from PyQt5.QtQuick import QQuickView
@@ -218,4 +218,22 @@ class mainWindow(QMainWindow):
 
     def showOpenProject(self):
         # display a pop menu of current open project
-        pass
+        if not len(self.openedProject):
+            print('no opened project')
+            return
+        allOpenedProjectID = self.openedProject.getAllID()
+        openedProjectMenu = QMenu()
+        for index, ID in enumerate(allOpenedProjectID):
+            if not ID:
+                continue
+            handle = self.openedProject.getHandle(index)
+            oneProject = QAction(handle.projectName, self)
+            oneProject.triggered.connect(lambda: self.showProjectPage(index))
+            openedProjectMenu.addAction(oneProject)
+
+        self.projectAction.setMenu(openedProjectMenu)
+        openedProjectMenu.exec(QCursor.pos())
+
+    def showProjectPage(self, index):
+        # show opened project page using index
+        self.mainLayout.setCurrentIndex(index)

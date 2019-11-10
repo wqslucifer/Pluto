@@ -28,6 +28,12 @@ class ProjectQueue(object):
     def getHandle(self, index):
         return self.projectDict[self.project_index[index]]
 
+    def getAllHandle(self):
+        return self.projectDict
+
+    def getAllID(self):
+        return self.project_index
+
     def __len__(self):
         return self.length
 
