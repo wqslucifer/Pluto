@@ -36,13 +36,14 @@ PROJECT_PATHS = ['E:/project/Pluto/test/testProject_1/project.pluto',
 
 
 class mainWindow(QMainWindow):
+
     def __init__(self, parent=None):
         super(mainWindow, self).__init__(parent)
         self.ui = loadUi('UI/mainFrame.ui', self)
         self.mainWidget = QWidget(self)
         self.mainWidgetLayout = QVBoxLayout(self.mainWidget)
         self.setCentralWidget(self.mainWidget)
-        self.setWindowIcon(QIcon('res/pluto.png'))
+        self.setWindowIcon(QIcon('res/pluto.ico'))
         ###############################
         # local variables
         self.defaultDir = '.'
@@ -246,10 +247,6 @@ class mainWindow(QMainWindow):
 
     def initTabWidget(self, tabWidget: ColorTabWidget, handle: ProjectReader):
         tabManager = TabManager(tabWidget, handle)
-        # main page
-        mainPageWidget = QWidget(tabWidget)
-        tabWidget.addTab(mainPageWidget, 'MainPage')
-
         # models
         modelRootDir, modelFileList = handle.getModels()
         tabManager.setModels(modelRootDir, modelFileList)
@@ -263,4 +260,28 @@ class mainWindow(QMainWindow):
         resultRootDir, resultFileList = handle.getResults()
         tabManager.setResults(resultRootDir, resultFileList)
 
+        # init qml main page list
+        projectMainPage = QQuickWidget(tabWidget)
+        projectMainPage.setResizeMode(QQuickWidget.SizeRootObjectToView)
+        projectMainPage.setSource(QUrl.fromLocalFile('QML/ProjectMainPage.qml'))
+        projectMainPage.setMinimumWidth(550)
+        projectMainPage.setMinimumHeight(250)
+        projectMainPage.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        obj_projectMainPage = projectMainPage.rootObject()
+        # send main page init dict
+        obj_projectMainPage.onInitMainPageItems(self.getProjectDetail(tabManager))
+
+        tabWidget.addTab(projectMainPage, 'MainPage')
+
         return tabManager
+
+    def getProjectDetail(self, tabManager: TabManager):
+        info = dict()
+        handle = tabManager.handle
+        info['ID'] = handle.yamlFile
+        info['projectName'] = handle.projectName
+        info['model'] = []
+        info['data'] = []
+        info['script'] = []
+        info['result'] = []
+        return info

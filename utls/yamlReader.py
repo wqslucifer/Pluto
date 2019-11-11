@@ -24,7 +24,7 @@ class ProjectReader(object):
         self.__projectFiles = None  # dict
         self.loadProject(yamlFile)
         self.__logger = logging.getLogger('debug')
-        self.__logger.setLevel(logging.DEBUG)
+        self.__logger.setLevel(logging.INFO)
         # handler = logging.FileHandler('output.log')
         # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         # handler.setFormatter(formatter)
