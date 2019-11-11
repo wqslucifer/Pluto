@@ -281,6 +281,8 @@ class mainWindow(QMainWindow):
         handle = tabManager.handle
         info['ID'] = handle.yamlFile
         info['projectName'] = handle.projectName
+        info['lastAccessTime'] = handle.lastAccessTime.replace(tzinfo=timezone.utc).astimezone(tz=None).strftime(
+            '%y/%m/%d %H:%M:%S')
         info['model'] = []
         info['data'] = []
         info['script'] = []

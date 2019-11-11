@@ -544,11 +544,11 @@ class ColorTabWidget(QTabWidget):
     def __init__(self, parent=None):
         super(ColorTabWidget, self).__init__(parent)
         d = {
-            "Model: ": QColor("ff8566"),  # red
+            "Model: ": QColor("#ff8566"),  # red
             "Data: ": QColor("#ffe680"),  # yellow
-            "Script: ": QColor("b3ff99"),  # green
+            "Script: ": QColor("#b3ff99"),  # green
             "Result: ": QColor("#80ccff"),  # blue
-            "Run: ": QColor("aa80ff"),  # pink
+            "Run: ": QColor("#aa80ff"),  # pink
             "MainPage": QColor("#eb99ff"),  #
         }
         self.setTabBar(ColorTabBar(d))
