@@ -20,7 +20,7 @@ Rectangle {
         scriptList = PanelItems['script']
         resultList = PanelItems['result']
         console.log(PanelItems['projectName'])
-        listModel.append({'projectName':'sadfasdf'})
+        listModel.append({'projectName':PanelItems['projectName']})
         count = modelList.length + dataList.length + scriptList.length + resultList.length
         root.height = initHeight+500*count
         //selectPage_DM.initModel(DMPageItems)

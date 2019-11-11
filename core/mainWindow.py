@@ -4,6 +4,7 @@ import time
 import json
 import gc
 
+from functools import partial
 from datetime import datetime, timezone, time
 
 from PyQt5.QtCore import QUrl, QObject, pyqtSlot, QUrlQuery, QByteArray, Qt, QJsonDocument, \
@@ -12,7 +13,6 @@ from PyQt5.QtCore import QUrl, QObject, pyqtSlot, QUrlQuery, QByteArray, Qt, QJs
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.Qt import QSplitter, QFrame
-
 from PyQt5.QtGui import QResizeEvent, QIcon, QCursor
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtQuickWidgets import QQuickWidget
@@ -25,6 +25,7 @@ from core.customWidget import ProjectWidget, CollapsibleTabWidget, RollingLabel,
 
 from utls.yamlReader import ProjectReader
 from utls.structure import Queue, ProjectQueue, TabManager
+
 
 import warnings
 
@@ -235,7 +236,7 @@ class mainWindow(QMainWindow):
                 continue
             handle = self.openedProject.getHandle(index)
             oneProject = QAction(handle.projectName, self)
-            oneProject.triggered.connect(lambda: self.showProjectPage(index))
+            oneProject.triggered.connect(partial(self.showProjectPage, index))
             openedProjectMenu.addAction(oneProject)
 
         self.projectAction.setMenu(openedProjectMenu)
