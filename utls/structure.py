@@ -69,31 +69,6 @@ class TabManager(object):
         self.dataTabs = []
         self.resultTabs = []
         self.runTabs = []
-        # file manage
-        self.modelDirRoot = None
-        self.modelFileList = []
-        self.dataDirRoot = None
-        self.dataFileList = []
-        self.scriptDirRoot = None
-        self.scriptFileList = []
-        self.resultRootDir = None
-        self.resultFileList = []
-
-    def setModels(self, modelDirRoot, modelFileList):
-        self.modelDirRoot = modelDirRoot
-        self.modelFileList = modelFileList
-
-    def setData(self, dataDirRoot, dataFileList):
-        self.dataDirRoot = dataDirRoot
-        self.dataFileList = dataFileList
-
-    def setScripts(self, scriptDirRoot, scriptFileList):
-        self.scriptDirRoot = scriptDirRoot
-        self.scriptFileList = scriptFileList
-
-    def setResults(self, resultRootDir, resultFileList):
-        self.resultRootDir = resultRootDir
-        self.resultFileList = resultFileList
 
     def setMainPageWidget(self, widget):
         self.mainPageWidget = widget

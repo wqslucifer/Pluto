@@ -248,18 +248,6 @@ class mainWindow(QMainWindow):
 
     def initTabWidget(self, tabWidget: ColorTabWidget, handle: ProjectReader):
         tabManager = TabManager(tabWidget, handle)
-        # models
-        modelRootDir, modelFileList = handle.getModels()
-        tabManager.setModels(modelRootDir, modelFileList)
-        # data
-        dataRootDir, dataFileList = handle.getData()
-        tabManager.setData(dataRootDir, dataFileList)
-        # script
-        scriptRootDir, scriptFileList = handle.getScripts()
-        tabManager.setScripts(scriptRootDir, scriptFileList)
-        # result
-        resultRootDir, resultFileList = handle.getResults()
-        tabManager.setResults(resultRootDir, resultFileList)
 
         # init qml main page list
         projectMainPage = QQuickWidget(tabWidget)
@@ -273,7 +261,6 @@ class mainWindow(QMainWindow):
         obj_projectMainPage.onInitMainPageItems(self.getProjectDetail(tabManager))
 
         tabWidget.addTab(projectMainPage, 'MainPage')
-
         return tabManager
 
     def getProjectDetail(self, tabManager: TabManager):
@@ -283,8 +270,8 @@ class mainWindow(QMainWindow):
         info['projectName'] = handle.projectName
         info['lastAccessTime'] = handle.lastAccessTime.replace(tzinfo=timezone.utc).astimezone(tz=None).strftime(
             '%y/%m/%d %H:%M:%S')
-        info['model'] = []
-        info['data'] = []
-        info['script'] = []
+        info['model'] = handle.modelSourceHandle.getAllModel()
+        info['data'] = handle.dataSourceHandle.getAllData()
+        info['script'] = handle.scriptSourceHandle.getAllScript()
         info['result'] = []
         return info

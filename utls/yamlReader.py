@@ -25,6 +25,12 @@ class ProjectReader(object):
         self.__createTime = None  # using utc time
         self.__lastAccessTime = None  # using utc time
         self.__projectFiles = None  # dict
+        self.dataSource = None
+        self.modelSource = None
+        self.scriptSource = None
+        self.dataSourceHandle = None
+        self.modelSourceHandle = None
+        self.scriptSourceHandle = None
         self.loadProject(yamlFile)
         self.__logger = logging.getLogger('debug')
         self.__logger.setLevel(logging.INFO)
@@ -74,8 +80,26 @@ class ProjectReader(object):
                 self.__createTime = self.__raw_project['createTime']
                 self.__lastAccessTime = self.__raw_project['lastAccessTime']
                 self.__projectFiles = self.__raw_project['projectFiles']
+                self.dataSource = self.__raw_project['dataSource']
+                self.modelSource = self.__raw_project['modelSource']
+                self.scriptSource = self.__raw_project['scriptSource']
+                if self.dataSource:
+                    self.loadDataSource()
+                if self.modelSource:
+                    self.loadModelSource()
+                if self.scriptSource:
+                    self.loadScriptSource()
             except yaml.YAMLError:
                 self.__logger.error('yaml file error: ' + yamlFile)
+
+    def loadDataSource(self):
+        self.dataSourceHandle = dataSourceReader(self.dataSource)
+
+    def loadModelSource(self):
+        self.modelSourceHandle = modelSourceReader(self.modelSource)
+
+    def loadScriptSource(self):
+        self.scriptSourceHandle = scriptSourceReader(self.scriptSource)
 
     @property
     def lastAccessTime(self):
@@ -120,39 +144,14 @@ class ProjectReader(object):
         self.__raw_project['projectName'] = self.__projectName
         self.__raw_project['projectPath'] = self.__projectPath
         self.__raw_project['projectFiles'] = self.__projectFiles
+        self.__raw_project['dataSource'] = self.dataSource
+        self.__raw_project['modelSource'] = self.modelSource
+        self.__raw_project['scriptSource'] = self.scriptSource
 
     def saveToYaml(self):
         # save yaml dict to project file
         with open(self.yamlFile, 'w') as f:
             yaml.safe_dump(self.__raw_project, f, default_flow_style=False)
-
-    def getModels(self):
-        modelDir = os.path.join(self.__projectPath, 'model')
-        if os.path.exists(modelDir):
-            return modelDir, os.listdir(modelDir)
-        else:
-            return None, []
-
-    def getData(self):
-        dataDir = os.path.join(self.__projectPath, 'data')
-        if os.path.exists(dataDir):
-            return dataDir, os.listdir(dataDir)
-        else:
-            return None, []
-
-    def getScripts(self):
-        scriptDir = os.path.join(self.__projectPath, 'script')
-        if os.path.exists(scriptDir):
-            return scriptDir, os.listdir(scriptDir)
-        else:
-            return None, []
-
-    def getResults(self):
-        resultDir = os.path.join(self.__projectPath, 'result')
-        if os.path.exists(resultDir):
-            return resultDir, os.listdir(resultDir)
-        else:
-            return None, []
 
 
 class dataSourceReader(object):
@@ -165,7 +164,7 @@ class dataSourceReader(object):
             'CC': 'trainImageDir',
             'DD': 'testImageDir',
             'EE': 'otherImageDir',
-            'FF': 'plutoDataSets'
+            'FF': 'plutoDataSets',
         }
         self.yamlFile = yamlFile
         # local storage
@@ -274,6 +273,18 @@ class dataSourceReader(object):
         self.__raw_data['lastUpdateTime'] = self.__lastUpdateTime
         self.updateToYaml()
 
+    def getAllData(self, select='path'):
+        r = []
+        for d in [self.__plutoDataSets]:
+            if d:
+                for uid, dataPath in d.items():
+                    dataHandle = modelLoader(dataPath)
+                    if select == 'path':
+                        r.append(dataPath)
+                    else:
+                        r.append((uid, dataPath, dataHandle))
+        return r
+
 
 class scriptSourceReader(object):
     def __init__(self, yamlFile):
@@ -307,7 +318,6 @@ class scriptSourceReader(object):
         # local storage
         self.__raw_data = None
         self.__lastUpdateTime = None
-        self.__dataSourceWeb = None
         self.__processScripts = {}
         self.__visualizeScripts = {}
         self.__modelScripts = {}
@@ -373,6 +383,18 @@ class scriptSourceReader(object):
         self.__lastUpdateTime = datetime.utcnow()
         self.__raw_data['lastUpdateTime'] = self.__lastUpdateTime
         self.updateToYaml()
+
+    def getAllScript(self, select='path'):
+        r = []
+        for d in [self.__processScripts, self.__modelScripts, self.__visualizeScripts]:
+            if d:
+                for uid, scriptPath in d.items():
+                    handle = scriptLoader(scriptPath)
+                    if select == 'path':
+                        r.append(scriptPath)
+                    else:
+                        r.append((uid, scriptPath, handle))
+        return r
 
 
 class modelSourceReader(object):
@@ -469,6 +491,18 @@ class modelSourceReader(object):
         self.__lastUpdateTime = datetime.utcnow()
         self.__raw_data['lastUpdateTime'] = self.__lastUpdateTime
         self.updateToYaml()
+
+    def getAllModel(self, select='path'):
+        r = []
+        for d in [self.__DL_classification, self.__DL_segmentation, self.__ML_model]:
+            if d:
+                for uid, modelPath in d.items():
+                    handle = modelLoader(modelPath)
+                    if select == 'path':
+                        r.append(modelPath)
+                    else:
+                        r.append((uid, modelPath, handle))
+        return r
 
 
 class dataLoader(object):
@@ -599,6 +633,11 @@ class modelLoader(object):
             yaml.safe_dump(self.__raw_model, f, default_flow_style=False)
 
 
+class scriptLoader(object):
+    def __init__(self, scFile):
+        self.scFile = scFile
+
+
 if __name__ == '__main__':
     p = ProjectReader('../test/testProject_1/project.pluto')
-    print(p.projectFiles)
+    print(p.dataSourceHandle)

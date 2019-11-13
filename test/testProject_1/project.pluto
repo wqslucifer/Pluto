@@ -36,3 +36,6 @@ projectFiles:
       - resultFile1
 projectName: testProject_1
 projectPath: E:\project\Pluto\test\testProject_1
+dataSource: E:\project\Pluto\test\testProject_1\data\dataSource.source
+modelSource: E:\project\Pluto\test\testProject_1\model\modelSource.source
+scriptSource: E:\project\Pluto\test\testProject_1\script\scriptSource.source

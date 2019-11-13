@@ -6,8 +6,17 @@ import QtQuick.Controls.Material 2.2
 
 Item {
     id: rootItem
-    property var headerHeight: 20
-    property var listviewHeight: 300
+    property string selectColor: '#81D4FA'
+    property string hoverColor: '#6A7FFC'
+    property string transparentColor: 'transparent'
+    property string textColor: '#000000'
+    property string itemColor1: '#B7D7FF'
+    property string itemColor2: '#A0B8FF'
+    property string cellColor: itemColor1
+    property string saveColor: ''
+
+    property var headerHeight: 30
+    property var listviewHeight: 30
     property var headerName: "none"
     property var count: 0
     property var mode: ''
@@ -18,37 +27,37 @@ Item {
         'Script':'#b3ff99',
         'Result':'#80ccff',
     }
-
-    property var componentDict: {
-        'Model':modelDelegate,
-        'Data':dataDelegate,
-        'Script':scriptDelegate,
-        'Result':resultDelegate,
-    }
-
-    function onInitListItems(items){
-
+    function onInitListItems(listContent){
+        for(var i=0; i<listContent.length; i++){
+            console.log(listContent[i])
+            listModel.append({itemName:listContent[i]})
+        }
+        rootItem.height = header.headerHeight + rootItem.listviewHeight * listContent.length
+        //listModel.append()
     }
 
     width: 400
-    height: 4*150
+    height: 4*200
 
-    ColumnLayout {
-        id: columnLayout
+    Column {
+        id: column
+        anchors.rightMargin: 0
+        anchors.leftMargin: 0
         anchors.fill: parent
-
+        spacing: 0
         Rectangle {
             id: header
             height: headerHeight
             color: colorDict[mode]
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.fillHeight: false
-            Layout.fillWidth: true
-
+            anchors.right: parent.right
+            anchors.rightMargin: 0
+            anchors.left: parent.left
+            anchors.leftMargin: 0
             RowLayout {
                 id: rowLayout
-                anchors.rightMargin: 5
-                anchors.leftMargin: 5
+                spacing: 0
+                anchors.rightMargin: 0
+                anchors.leftMargin: 0
                 anchors.fill: parent
                 Label {
                     id: headerLabel
@@ -70,36 +79,31 @@ Item {
                         }
                     }
                 }
-
             }
         }
 
         Pane {
             id: collapsiblePane
-            width: parent.height
-            height: rootItem.listviewHeight
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-
+            anchors.right: parent.right
+            anchors.rightMargin: 0
+            anchors.left: parent.left
+            anchors.leftMargin: 0
             ListView {
                 id: listView
                 property int selected_index: -1
-                anchors.rightMargin: 5
-                anchors.leftMargin: 5
                 anchors.fill: parent
-
                 model: listModel
-                delegate: componentDict[mode]
+                delegate: delegate
                 ListModel {
                     id: listModel
                 }
             }
             Component{
-                id: modelDelegate
+                id: delegate
                 Item {
-                    id: modelDelegateItem
+                    id: delegateItem
                     width: parent.width
-                    height: 120
+                    height: 100
                     Button {
                         id: listItem
                         width: parent.width
@@ -158,81 +162,7 @@ Item {
                     }
                 }
             }
-            Component{
-                id: dataDelegate
-                Item {
-                    id: dataDelegateItem
-                    width: parent.width
-                    height: 120
-                    Button {
-                        id: listItem
-                        width: parent.width
-                        height: parent.height
-                        anchors.fill: parent
-                        flat: true
-                        highlighted: true
-                        checkable: true
-                        checked:true
-                        property int checked_index: -1
-                        background: Rectangle{
-                            id: itemBgColor
-                            width:parent.width
-                            height: parent.height
-                            color:cellColor
-                        }
-                    }
-                }
-            }
-            Component{
-                id: scriptDelegate
-                Item {
-                    id: dataDelegateItem
-                    width: parent.width
-                    height: 120
-                    Button {
-                        id: listItem
-                        width: parent.width
-                        height: parent.height
-                        anchors.fill: parent
-                        flat: true
-                        highlighted: true
-                        checkable: true
-                        checked:true
-                        property int checked_index: -1
-                        background: Rectangle{
-                            id: itemBgColor
-                            width:parent.width
-                            height: parent.height
-                            color:cellColor
-                        }
-                    }
-                }
-            }
-            Component{
-                id: resultDelegate
-                Item {
-                    id: dataDelegateItem
-                    width: parent.width
-                    height: 120
-                    Button {
-                        id: listItem
-                        width: parent.width
-                        height: parent.height
-                        anchors.fill: parent
-                        flat: true
-                        highlighted: true
-                        checkable: true
-                        checked:true
-                        property int checked_index: -1
-                        background: Rectangle{
-                            id: itemBgColor
-                            width:parent.width
-                            height: parent.height
-                            color:cellColor
-                        }
-                    }
-                }
-            }
+
         }
 
     }
@@ -257,8 +187,30 @@ Item {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*##^## Designer {
-    D{i:3;anchors_height:20;anchors_width:400}D{i:2;anchors_width:400}D{i:6;anchors_width:400}
+    D{i:3;anchors_height:20;anchors_width:400}D{i:2;anchors_width:400}D{i:6;anchors_height:30;anchors_width:800}
 D{i:1;anchors_height:600;anchors_width:400}
 }
  ##^##*/

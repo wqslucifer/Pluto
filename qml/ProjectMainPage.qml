@@ -2,6 +2,8 @@ import QtQuick 2.12
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.3
 import QtQuick.Controls.Material 2.2
+import QtQml.Models 2.2
+
 
 Rectangle {
     id: root
@@ -11,7 +13,7 @@ Rectangle {
     property var dataList: []
     property var scriptList: []
     property var resultList: []
-    property var initHeight: 200
+    property var initHeight: 60
     property var projectName: ''
     property var lastAccessTime: ''
 
@@ -22,23 +24,16 @@ Rectangle {
         scriptList = PanelItems['script']
         resultList = PanelItems['result']
         lastAccessTime = PanelItems['lastAccessTime']
-        // init modelList
-        listModel.append({panelMode:'Model',header: 'Model'})
 
-        listModel.append({panelMode:'Data',header: 'Data'})
-
-        listModel.append({panelMode:'Script',header: 'Script'})
-
-        listModel.append({panelMode:'Result',header: 'Result'})
-
-        count = modelList.length + dataList.length + scriptList.length + resultList.length
-        root.height = initHeight+500*count
+        modelPanel.onInitListItems(modelList)
         //selectPage_DM.initModel(DMPageItems)
+        console.log(modelPanel.height)
+        root.height = initHeight+modelPanel.height+dataPanel.height+scriptPanel.height+resultPanel.height
     }
 
     width: 800
-    height: initHeight
-    radius: 15
+    height: 60
+    radius: 3
     border.width: 4
     color: 'transparent'
 
@@ -46,7 +41,12 @@ Rectangle {
         id: projectInfo
         color: 'transparent'
         width: parent.width
-        height: 80
+        height: initHeight
+        anchors.bottom: listView.top
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottomMargin: 0
         Column {
             id: column
             anchors.rightMargin: 5
@@ -54,7 +54,7 @@ Rectangle {
             anchors.bottomMargin: 0
             anchors.topMargin: 10
             anchors.fill: parent
-            spacing: 5
+            spacing: 0
             Row {
                 id: projectNameRow
                 height: 20
@@ -110,33 +110,58 @@ Rectangle {
         }
     }
 
-    ListView {
-        id: listView
+    Rectangle {
+        id: rectangle
+        //color: "#ffffff"
+        color: 'transparent'
+        anchors.bottomMargin: 5
         anchors.rightMargin: 5
         anchors.leftMargin: 5
-        anchors.bottomMargin: 5
+        clip: true
         anchors.top: projectInfo.bottom
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.topMargin: 0
-        model: listModel
-        delegate:delegate
-    }
-
-    Component{
-        id: delegate
-        CollapsibleItem{
-            width: parent.width
-            height: 40
-            headerName: header
-            mode:panelMode
+        ScrollView {
+            id: scrollView
+            anchors.fill: parent
+            ListView {
+                id: listView
+                anchors.fill: parent
+                model: objectModel
+            }
         }
     }
 
-    ListModel {
-        id: listModel
+    ObjectModel {
+        id: objectModel
+        CollapsibleItem{
+            id: modelPanel
+            width: root.width
+            headerName: 'Model'
+            mode: 'Model'
+        }
+        CollapsibleItem{
+            id: dataPanel
+            width: root.width
+            headerName: 'Data'
+            mode: 'Data'
+        }
+        CollapsibleItem{
+            id: scriptPanel
+            width: root.width
+            headerName: 'Script'
+            mode: 'Script'
+        }
+        CollapsibleItem{
+            id: resultPanel
+            width: root.width
+            headerName: 'Result'
+            mode: 'Result'
+        }
     }
+
 
 
 
@@ -161,8 +186,28 @@ Rectangle {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*##^## Designer {
-    D{i:4;anchors_height:20;anchors_width:780}D{i:3;anchors_width:790}D{i:6;anchors_height:20;anchors_width:780}
-D{i:5;anchors_width:790}D{i:2;anchors_height:100;anchors_width:100}
+    D{i:1;anchors_height:80}D{i:10;anchors_x:0;anchors_y:60}D{i:9;anchors_height:200;anchors_width:200;anchors_x:0;anchors_y:60}
+D{i:8;anchors_height:200;anchors_width:200}
 }
  ##^##*/

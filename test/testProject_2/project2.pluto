@@ -15,3 +15,6 @@ projectFiles:
       - delfile_3
 projectName: testProject_2
 projectPath: E:\project\Pluto\test\testProject_2
+dataSource: null
+modelSource: null
+scriptSource: null
