@@ -39,14 +39,12 @@ Rectangle {
 
     Rectangle{
         id: projectInfo
+        height: 60
         color: 'transparent'
-        width: parent.width
-        height: initHeight
-        anchors.bottom: listView.top
         anchors.right: parent.right
+        anchors.rightMargin: 0
         anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.bottomMargin: 0
+        anchors.leftMargin: 0
         Column {
             id: column
             anchors.rightMargin: 5
@@ -112,17 +110,16 @@ Rectangle {
 
     Rectangle {
         id: rectangle
+        x: 0
+        y: 60
         //color: "#ffffff"
         color: 'transparent'
-        anchors.bottomMargin: 5
-        anchors.rightMargin: 5
-        anchors.leftMargin: 5
-        clip: true
         anchors.top: projectInfo.bottom
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.topMargin: 0
+        clip: true
         ScrollView {
             id: scrollView
             anchors.fill: parent
@@ -175,39 +172,7 @@ Rectangle {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*##^## Designer {
-    D{i:1;anchors_height:80}D{i:10;anchors_x:0;anchors_y:60}D{i:9;anchors_height:200;anchors_width:200;anchors_x:0;anchors_y:60}
-D{i:8;anchors_height:200;anchors_width:200}
+    D{i:1;anchors_height:200;anchors_width:200}
 }
  ##^##*/

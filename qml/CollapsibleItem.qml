@@ -16,7 +16,8 @@ Item {
     property string saveColor: ''
 
     property var headerHeight: 30
-    property var listviewHeight: 30
+    property var listviewHeight: 80
+    property var itemHeight: 50
     property var headerName: "none"
     property var count: 0
     property var mode: ''
@@ -32,12 +33,13 @@ Item {
             console.log(listContent[i])
             listModel.append({itemName:listContent[i]})
         }
-        rootItem.height = header.headerHeight + rootItem.listviewHeight * listContent.length
+        rootItem.height = headerHeight + rootItem.listviewHeight * listContent.length
         //listModel.append()
+        console.log(rootItem.height, headerHeight, rootItem.listviewHeight, listContent.length)
     }
 
     width: 400
-    height: 4*200
+    height: headerHeight
 
     Column {
         id: column
@@ -103,7 +105,7 @@ Item {
                 Item {
                     id: delegateItem
                     width: parent.width
-                    height: 100
+                    height: itemHeight
                     Button {
                         id: listItem
                         width: parent.width
@@ -133,7 +135,7 @@ Item {
                                     text: itemName
                                     font.bold: true
                                     color: textColor
-                                    font.pointSize: 15
+                                    font.pointSize: 10
                                     Layout.topMargin: 5
                                     Layout.leftMargin: 5
                                     Layout.minimumWidth: 200
