@@ -600,5 +600,5 @@ class modelLoader(object):
 
 
 if __name__ == '__main__':
-    p = scriptSourceReader('../test/testProject_1/script/scriptSource.source')
-    print(p.processScripts, p.modelScripts)
+    p = ProjectReader('../test/testProject_1/project.pluto')
+    print(p.projectFiles)

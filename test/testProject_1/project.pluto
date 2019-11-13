@@ -6,8 +6,8 @@ projectFiles:
     - data:
       - dataFile1
       - dataSource.source
-      - train_images:
-      - test_images:
+      - train_images: []
+      - test_images: []
       - train.csv
       - test.csv
       - train_data.ds
