@@ -1,0 +1,11 @@
+lastUpdateTime: 2019-11-09 22:23:43.079325
+totalSize: '980 MB'
+csvFiles:
+  00FF0000: 'E:\project\Pluto\test\testProject_1\data\train.csv'
+  01FF0000: 'E:\project\Pluto\test\testProject_1\data\test.csv'
+  02FF0000: 'E:\project\Pluto\test\testProject_1\data\other.csv'
+  0AFF0000: 'E:\project\Pluto\test\testProject_1\data\sample_submission.csv'
+
+imageDirs:
+  CCFF0000: 'E:\project\Pluto\test\testProject_1\data\train_images'
+  DDFF0000: 'E:\project\Pluto\test\testProject_1\data\test_images'

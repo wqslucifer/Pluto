@@ -1,0 +1,11 @@
+lastUpdateTime: 2019-11-09 22:23:43.079325
+dataSourceWeb: 'http:\\www.source.com\data\'
+dataSouce: 'E:\project\Pluto\test\testProject_1\data\dataSource.source'
+scriptSource: 'E:\project\Pluto\test\testProject_1\script\scriptSource.source'
+dataFiles:
+  - '0AFF0002'
+  - '00FF0000'
+  - '01FF0001'
+  - '02FF0000'
+dataDescribe: 'xxx xxx'
+preprocessScript: 'E:\project\Pluto\test\testProject_1\script\preprocessScript.py'

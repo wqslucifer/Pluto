@@ -1,0 +1,17 @@
+lastUpdateTime: 2019-11-09 22:23:43.079325
+processScripts:
+  00FF0000: 'E:\project\Pluto\test\testProject_1\script\preprocessScript.sc'
+  01FF0000: 'E:\project\Pluto\test\testProject_1\script\postprocessScript.sc'
+
+visualizeScripts:
+  20FF0000: 'E:\project\Pluto\test\testProject_1\script\visualizationScript.sc'
+
+modelScripts:
+  40FF0000: 'E:\project\Pluto\test\testProject_1\script\lightgbm.sc'
+  41FF0000: 'E:\project\Pluto\test\testProject_1\script\xgboost.sc'
+  42FF0000: 'E:\project\Pluto\test\testProject_1\script\catboost.sc'
+  A0FF0000: 'E:\project\Pluto\test\testProject_1\script\vgg.sc'
+  C0FF0000: 'E:\project\Pluto\test\testProject_1\script\u-net.sc'
+
+
+
