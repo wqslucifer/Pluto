@@ -5,10 +5,29 @@ projectFiles:
     testProject_1:
     - data:
       - dataFile1
+      - dataSource.source
+      - train_images:
+      - test_images:
+      - train.csv
+      - test.csv
+      - train_data.ds
+      - other.csv
+      - sample_submission.csv
     - model:
       - modelFile1
+      - model_lightgbm.md
+      - modelSource.source
     - script:
       - script1
+      - catboost.sc
+      - lightgbm.sc
+      - preprocessScript.sc
+      - postprocessScript.sc
+      - scriptSource.source
+      - u-net.sc
+      - vgg16.sc
+      - visualizationScript.sc
+      - xgboost.sc
     - project.pluto
     - delFile.1
     - delFile_2:

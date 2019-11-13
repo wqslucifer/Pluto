@@ -164,8 +164,8 @@ class dataSourceReader(object):
             '0A': 'sample_submission_csv',
             'CC': 'trainImageDir',
             'DD': 'testImageDir',
-            'FF': 'otherImageDir',
-
+            'EE': 'otherImageDir',
+            'FF': 'plutoDataSets'
         }
         self.yamlFile = yamlFile
         # local storage
@@ -174,6 +174,7 @@ class dataSourceReader(object):
         self.__dataSourceWeb = None
         self.__csvFiles = {}
         self.__imageDirs = {}
+        self.__plutoDataSets = {}
         self.__totalSize = ''
         # logger
         self.__logger = logging.getLogger('debug')
@@ -372,6 +373,230 @@ class scriptSourceReader(object):
         self.__lastUpdateTime = datetime.utcnow()
         self.__raw_data['lastUpdateTime'] = self.__lastUpdateTime
         self.updateToYaml()
+
+
+class modelSourceReader(object):
+    def __init__(self, yamlFile):
+        self.modelCode = {
+            '40': 'lightgbm',
+            '41': 'xgboost',
+            '42': 'catboost',
+            '43': 'linear',
+            '44': 'randomForest',
+            'A0': 'vgg',
+            'A1': 'resnet',
+            'A2': 'inception',
+            'A3': 'inceptionResnet',
+            'A4': 'densenet',
+            'A5': 'mobilenet',
+            'A6': 'xception',
+            'A7': 'squeezenet',
+            'A8': 'googlenet',
+            'A9': 'se_resnet',
+            'AA': 'senet',
+            'AB': 'efficientnet',
+            'C0': 'unet',
+            'C1': 'FPN',
+            'C2': 'PSPNet',
+            'C3': 'Linknet',
+        }
+        self.yamlFile = yamlFile
+        # local storage
+        self.__raw_data = None
+        self.__lastUpdateTime = None
+        self.__DL_classification = {}
+        self.__DL_segmentation = {}
+        self.__ML_model = {}
+        # logger
+        self.__logger = logging.getLogger('debug')
+        self.__logger.setLevel(logging.INFO)
+        # load yaml file
+        self.loadYaml(yamlFile)
+
+    @property
+    def lastUpdateTime(self):
+        return self.__lastUpdateTime
+
+    @property
+    def lastUpdateTimeLocal(self):
+        return self.__lastUpdateTime.replace(tzinfo=timezone.utc).astimezone(tz=None).strftime('%y/%m/%d %H:%M:%S')
+
+    @property
+    def DL_classification(self):
+        return self.__DL_classification
+
+    @property
+    def DL_segmentation(self):
+        return self.__DL_segmentation
+
+    @property
+    def ML_model(self):
+        return self.__ML_model
+
+    def loadYaml(self, yamlFile: str):
+        with open(yamlFile, 'r') as f:
+            try:
+                self.__raw_data = yaml.safe_load(f)
+                self.__lastUpdateTime = self.__raw_data['lastUpdateTime']
+                self.__DL_classification = self.__raw_data['DL_classification']
+                self.__DL_segmentation = self.__raw_data['DL_segmentation']
+                self.__ML_model = self.__raw_data['ML_model']
+
+            except yaml.YAMLError:
+                self.__logger.error('yaml file error: ' + yamlFile)
+
+    def updateToYaml(self):
+        # update information to yaml dict
+
+        with open(self.yamlFile, 'w') as f:
+            yaml.safe_dump(self.__raw_data, f, default_flow_style=False)
+
+    def addModelFile(self, uid: str, filePath: str, modelType='DL_classification'):  # TODO
+        if modelType == 'DL_classification':
+            self.__DL_classification[uid] = filePath
+            self.__raw_data['DL_classification'] = self.__DL_classification
+        elif modelType == 'DL_segmentation':
+            self.__DL_segmentation[uid] = filePath
+            self.__raw_data['DL_segmentation'] = self.__DL_segmentation
+        elif modelType == 'ML_model':
+            self.__ML_model[uid] = filePath
+            self.__raw_data['ML_model'] = self.__ML_model
+        else:
+            self.__logger.error('unknown script type: ' + str(modelType))
+        self.updateToYaml()
+
+    def updateTime(self):
+        self.__lastUpdateTime = datetime.utcnow()
+        self.__raw_data['lastUpdateTime'] = self.__lastUpdateTime
+        self.updateToYaml()
+
+
+class dataLoader(object):
+    def __init__(self, yamlFile):
+        self.code = {
+            '00': 'train_csv',
+            '01': 'test_csv',
+            '02': 'other_csv',
+            '0A': 'sample_submission_csv',
+            'CC': 'trainImageDir',
+            'DD': 'testImageDir',
+            'EE': 'otherImageDir',
+            'FF': 'plutoDataSets',
+        }
+        self.__raw_data = None
+        self.dataSourceWeb = None
+        self.lastUpdateTime = None
+        self.dataSource = None
+        self.scriptSource = None
+        self.dataType = None
+        self.dataFiles = None
+        self.dataDescribe = None
+        self.preprocessScript = None
+        self.yamlFile = yamlFile
+        self.__logger = logging.getLogger('debug')
+        self.__logger.setLevel(logging.INFO)
+        self.loadData(yamlFile)
+
+    def loadData(self, yamlFile):
+        with open(yamlFile, 'r') as f:
+            try:
+                self.__raw_data = yaml.safe_load(f)
+                self.lastUpdateTime = self.__raw_data['lastUpdateTime']
+                self.dataSourceWeb = self.__raw_data['dataSourceWeb']
+                self.dataSource = self.__raw_data['dataSource']
+                self.scriptSource = self.__raw_data['scriptSource']
+                self.dataType = self.__raw_data['dataType']
+                self.dataFiles = self.__raw_data['dataFiles']
+                self.dataDescribe = self.__raw_data['dataDescribe']
+                self.preprocessScript = self.__raw_data['preprocessScript']
+            except yaml.YAMLError:
+                self.__logger.error('yaml file error: ' + yamlFile)
+
+    def saveToYaml(self):
+        self.__raw_data['lastUpdateTime'] = self.lastUpdateTime
+        self.__raw_data['dataSourceWeb'] = self.dataSourceWeb
+        self.__raw_data['dataSource'] = self.dataSource
+        self.__raw_data['scriptSource'] = self.scriptSource
+        self.__raw_data['dataType'] = self.dataType
+        self.__raw_data['dataFiles'] = self.dataFiles
+        self.__raw_data['dataDescribe'] = self.dataDescribe
+        self.__raw_data['preprocessScript'] = self.preprocessScript
+        with open(self.yamlFile, 'w') as f:
+            yaml.safe_dump(self.__raw_data, f, default_flow_style=False)
+
+
+class modelLoader(object):
+    def __init__(self, yamlFile):
+        self.modelCode = {
+            '40': 'lightgbm',
+            '41': 'xgboost',
+            '42': 'catboost',
+            '43': 'linear',
+            '44': 'randomForest',
+            'A0': 'vgg',
+            'A1': 'resnet',
+            'A2': 'inception',
+            'A3': 'inceptionResnet',
+            'A4': 'densenet',
+            'A5': 'mobilenet',
+            'A6': 'xception',
+            'A7': 'squeezenet',
+            'A8': 'googlenet',
+            'A9': 'se_resnet',
+            'AA': 'senet',
+            'AB': 'efficientnet',
+            'C0': 'unet',
+            'C1': 'FPN',
+            'C2': 'PSPNet',
+            'C3': 'Linknet',
+        }
+        self.__raw_model = None
+        self.lastUpdateTime = None
+        self.scriptSource = None
+        self.trainData = None
+        self.testData = None
+        self.usingValData = None
+        self.modelType = None
+        self.param = None
+        self.modelDescribe = None
+        self.modelScript = None
+        self.postProcessScript = None
+        self.yamlFile = yamlFile
+        self.__logger = logging.getLogger('debug')
+        self.__logger.setLevel(logging.INFO)
+        self.loadModel(yamlFile)
+
+    def loadModel(self, yamlFile: str):
+        with open(yamlFile, 'r') as f:
+            try:
+                self.__raw_model = yaml.safe_load(f)
+                self.lastUpdateTime = self.__raw_model['lastUpdateTime']
+                self.scriptSource = self.__raw_model['scriptSource']
+                self.trainData = self.__raw_model['trainData']
+                self.testData = self.__raw_model['testData']
+                self.usingValData = self.__raw_model['usingValData']
+                self.modelType = self.__raw_model['modelType']
+                self.param = self.__raw_model['param']
+                self.modelDescribe = self.__raw_model['modelDescribe']
+                self.modelScript = self.__raw_model['modelScript']
+                self.postProcessScript = self.__raw_model['postProcessScript']
+            except yaml.YAMLError:
+                self.__logger.error('yaml file error: ' + yamlFile)
+
+    def saveToYaml(self):
+        self.__raw_model['lastUpdateTime'] = self.lastUpdateTime
+        self.__raw_model['scriptSource'] = self.scriptSource
+        self.__raw_model['trainData'] = self.trainData
+        self.__raw_model['testData'] = self.testData
+        self.__raw_model['usingValData'] = self.usingValData
+        self.__raw_model['modelType'] = self.modelType
+        self.__raw_model['param'] = self.param
+        self.__raw_model['modelDescribe'] = self.modelDescribe
+        self.__raw_model['modelScript'] = self.modelScript
+        self.__raw_model['postProcessScript'] = self.postProcessScript
+
+        with open(self.yamlFile, 'w') as f:
+            yaml.safe_dump(self.__raw_model, f, default_flow_style=False)
 
 
 if __name__ == '__main__':

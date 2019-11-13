@@ -9,3 +9,6 @@ csvFiles:
 imageDirs:
   CCFF0000: 'E:\project\Pluto\test\testProject_1\data\train_images'
   DDFF0000: 'E:\project\Pluto\test\testProject_1\data\test_images'
+
+plutoDataSet:
+  FFFF0000: 'E:\project\Pluto\test\testProject_1\data\train_data.ds'
