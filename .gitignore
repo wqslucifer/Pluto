@@ -1,5 +1,7 @@
 # Other files and folders
 
+# Data
+*.csv
 
 # Executables
 *.swf
