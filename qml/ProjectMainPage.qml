@@ -26,8 +26,9 @@ Rectangle {
         lastAccessTime = PanelItems['lastAccessTime']
 
         modelPanel.onInitListItems(modelList)
-        //selectPage_DM.initModel(DMPageItems)
-        console.log(modelPanel.height)
+        dataPanel.onInitListItems(dataList)
+        scriptPanel.onInitListItems(scriptList)
+
         root.height = initHeight+modelPanel.height+dataPanel.height+scriptPanel.height+resultPanel.height
     }
 
@@ -112,8 +113,10 @@ Rectangle {
         id: rectangle
         x: 0
         y: 60
+        height: 0
         //color: "#ffffff"
         color: 'transparent'
+        anchors.bottomMargin: 0
         anchors.top: projectInfo.bottom
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -125,6 +128,7 @@ Rectangle {
             anchors.fill: parent
             ListView {
                 id: listView
+                spacing: 20
                 anchors.fill: parent
                 model: objectModel
             }
@@ -164,6 +168,14 @@ Rectangle {
 
 
 }
+
+
+
+
+
+
+
+
 
 
 

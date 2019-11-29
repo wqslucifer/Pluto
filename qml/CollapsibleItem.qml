@@ -12,11 +12,8 @@ Item {
     property string textColor: '#000000'
     property string itemColor1: '#B7D7FF'
     property string itemColor2: '#A0B8FF'
-    property string cellColor: itemColor1
     property string saveColor: ''
-
     property var headerHeight: 30
-    property var listviewHeight: 80
     property var itemHeight: 50
     property var headerName: "none"
     property var count: 0
@@ -31,11 +28,17 @@ Item {
     function onInitListItems(listContent){
         for(var i=0; i<listContent.length; i++){
             console.log(listContent[i])
-            listModel.append({itemName:listContent[i]})
+            if(i%2===0){
+                listModel.append({itemName:listContent[i], cellColor:itemColor1})
+            }
+            else{
+                listModel.append({itemName:listContent[i], cellColor:itemColor2})
+            }
+
         }
-        rootItem.height = headerHeight + rootItem.listviewHeight * listContent.length
-        //listModel.append()
-        console.log(rootItem.height, headerHeight, rootItem.listviewHeight, listContent.length)
+        rootItem.height = headerHeight + rootItem.itemHeight * listContent.length
+        collapsiblePane.height = rootItem.itemHeight * listContent.length
+        console.log(rootItem.height, headerHeight, rootItem.itemHeight, listContent.length)
     }
 
     width: 400
@@ -52,9 +55,9 @@ Item {
             height: headerHeight
             color: colorDict[mode]
             anchors.right: parent.right
-            anchors.rightMargin: 0
+            anchors.rightMargin: 5
             anchors.left: parent.left
-            anchors.leftMargin: 0
+            anchors.leftMargin: 5
             RowLayout {
                 id: rowLayout
                 spacing: 0
@@ -87,15 +90,16 @@ Item {
         Pane {
             id: collapsiblePane
             anchors.right: parent.right
-            anchors.rightMargin: 0
+            anchors.rightMargin: 5
             anchors.left: parent.left
-            anchors.leftMargin: 0
+            anchors.leftMargin: 5
             ListView {
                 id: listView
                 property int selected_index: -1
                 anchors.fill: parent
                 model: listModel
                 delegate: delegate
+                spacing: 0
                 ListModel {
                     id: listModel
                 }
@@ -170,6 +174,10 @@ Item {
     }
 
 }
+
+
+
+
 
 
 

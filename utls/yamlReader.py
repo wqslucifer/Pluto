@@ -250,7 +250,7 @@ class dataSourceReader(object):
                 self.__csvFiles = self.__raw_data['csvFiles']
                 self.__imageDirs = self.__raw_data['imageDirs']
                 self.__totalSize = self.__raw_data['totalSize']
-
+                self.__plutoDataSets = self.__raw_data['plutoDataSet']
             except yaml.YAMLError:
                 self.__logger.error('yaml file error: ' + yamlFile)
 
@@ -278,7 +278,7 @@ class dataSourceReader(object):
         for d in [self.__plutoDataSets]:
             if d:
                 for uid, dataPath in d.items():
-                    dataHandle = modelLoader(dataPath)
+                    dataHandle = dataLoader(dataPath)
                     if select == 'path':
                         r.append(dataPath)
                     else:
@@ -640,4 +640,4 @@ class scriptLoader(object):
 
 if __name__ == '__main__':
     p = ProjectReader('../test/testProject_1/project.pluto')
-    print(p.dataSourceHandle)
+    print(p.dataSourceHandle.getAllData())
