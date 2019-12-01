@@ -270,8 +270,8 @@ class mainWindow(QMainWindow):
         info['projectName'] = handle.projectName
         info['lastAccessTime'] = handle.lastAccessTime.replace(tzinfo=timezone.utc).astimezone(tz=None).strftime(
             '%y/%m/%d %H:%M:%S')
-        info['model'] = handle.modelSourceHandle.getAllModel()
-        info['data'] = handle.dataSourceHandle.getAllData()
-        info['script'] = handle.scriptSourceHandle.getAllScript()
+        info['model'] = handle.modelSourceHandle.getAllPath()
+        info['data'] = handle.dataSourceHandle.getAllPath()
+        info['script'] = handle.scriptSourceHandle.getAllPath()
         info['result'] = []
         return info

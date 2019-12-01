@@ -128,6 +128,7 @@ Rectangle {
             anchors.fill: parent
             ListView {
                 id: listView
+                boundsBehavior: Flickable.StopAtBounds
                 spacing: 20
                 anchors.fill: parent
                 model: objectModel
@@ -168,6 +169,8 @@ Rectangle {
 
 
 }
+
+
 
 
 

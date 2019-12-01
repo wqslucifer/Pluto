@@ -96,6 +96,8 @@ Item {
             ListView {
                 id: listView
                 property int selected_index: -1
+                interactive: false
+                boundsBehavior: Flickable.StopAtBounds
                 anchors.fill: parent
                 model: listModel
                 delegate: delegate
@@ -174,6 +176,10 @@ Item {
     }
 
 }
+
+
+
+
 
 
 
