@@ -251,6 +251,7 @@ class dataSourceReader(sourceReader):
             try:
                 self.raw_data = yaml.safe_load(f)
                 self.lastUpdateTime = self.raw_data['lastUpdateTime']
+                self.dataSourceWeb = self.raw_data['dataSourceWeb']
                 self.csvFiles = self.raw_data['csvFiles']
                 self.imageDirs = self.raw_data['imageDirs']
                 self.totalSize = self.raw_data['totalSize']
@@ -277,6 +278,7 @@ class scriptSourceReader(sourceReader):
             '00': 'preprocess',
             '01': 'postprocess',
             '20': 'visualization',
+            '21': 'utility',
             '40': 'lightgbm',
             '41': 'xgboost',
             '42': 'catboost',
@@ -418,7 +420,6 @@ class dataLoader(object):
             'FF': 'plutoDataSets',
         }
         self.raw_data = None
-        self.dataSourceWeb = None
         self.lastUpdateTime = None
         self.dataSource = None
         self.scriptSource = None
@@ -436,7 +437,6 @@ class dataLoader(object):
             try:
                 self.raw_data = yaml.safe_load(f)
                 self.lastUpdateTime = self.raw_data['lastUpdateTime']
-                self.dataSourceWeb = self.raw_data['dataSourceWeb']
                 self.dataSource = self.raw_data['dataSource']
                 self.scriptSource = self.raw_data['scriptSource']
                 self.dataType = self.raw_data['dataType']
@@ -448,7 +448,6 @@ class dataLoader(object):
 
     def saveToYaml(self):
         self.raw_data['lastUpdateTime'] = self.lastUpdateTime
-        self.raw_data['dataSourceWeb'] = self.dataSourceWeb
         self.raw_data['dataSource'] = self.dataSource
         self.raw_data['scriptSource'] = self.scriptSource
         self.raw_data['dataType'] = self.dataType

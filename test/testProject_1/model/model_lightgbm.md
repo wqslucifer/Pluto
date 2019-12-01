@@ -1,6 +1,6 @@
 lastUpdateTime: 2019-11-09 22:23:43.079325
 scriptSource: 'E:\project\Pluto\test\testProject_1\script\scriptSource.source'
-trainData: 'FFFF0000'
+trainData: 'E:\project\Pluto\test\testProject_1\data\train_data.ds'
 testData: ''
 usingValData: True
 modelType: '40'
