@@ -1,5 +1,6 @@
 import yaml
 import os
+import abc
 import logging
 import numpy as np
 import pandas as pd
@@ -19,12 +20,12 @@ logging.basicConfig()
 class ProjectReader(object):
     def __init__(self, yamlFile):
         self.yamlFile = yamlFile
-        self.__raw_project = None
-        self.__projectName = None
-        self.__projectPath = None
-        self.__createTime = None  # using utc time
-        self.__lastAccessTime = None  # using utc time
-        self.__projectFiles = None  # dict
+        self.raw_project = None
+        self.projectName = None
+        self.projectPath = None
+        self.createTime = None  # using utc time
+        self.lastAccessTime = None  # using utc time
+        self.projectFiles = None  # dict
         self.dataSource = None
         self.modelSource = None
         self.scriptSource = None
@@ -39,18 +40,18 @@ class ProjectReader(object):
         # handler.setFormatter(formatter)
         # logger.addHandler(handler)
         self.checkFileTree()
-        fileTree = self.__projectFiles['root']
+        fileTree = self.projectFiles['root']
         key = list(fileTree.keys())[0]
         self.contents = fileTree[key]
 
     def checkFileTree(self):
-        fileTree = self.__projectFiles['root']
+        fileTree = self.projectFiles['root']
         key = list(fileTree.keys())[0]
         contents = fileTree[key]
-        curPath = os.path.join(self.__projectPath)
+        curPath = os.path.join(self.projectPath)
         self.checkDirs(curPath, contents)
-        self.__logger.debug(self.__projectFiles)
-        self.__projectFiles['root'][key] = contents
+        self.__logger.debug(self.projectFiles)
+        self.projectFiles['root'][key] = contents
         self.updateToYamlDict()
 
     def checkDirs(self, curPath, contents):
@@ -74,15 +75,15 @@ class ProjectReader(object):
     def loadProject(self, yamlFile: str):
         with open(yamlFile, 'r') as f:
             try:
-                self.__raw_project = yaml.safe_load(f)
-                self.__projectName = self.__raw_project['projectName']
-                self.__projectPath = self.__raw_project['projectPath']
-                self.__createTime = self.__raw_project['createTime']
-                self.__lastAccessTime = self.__raw_project['lastAccessTime']
-                self.__projectFiles = self.__raw_project['projectFiles']
-                self.dataSource = self.__raw_project['dataSource']
-                self.modelSource = self.__raw_project['modelSource']
-                self.scriptSource = self.__raw_project['scriptSource']
+                self.raw_project = yaml.safe_load(f)
+                self.projectName = self.raw_project['projectName']
+                self.projectPath = self.raw_project['projectPath']
+                self.createTime = self.raw_project['createTime']
+                self.lastAccessTime = self.raw_project['lastAccessTime']
+                self.projectFiles = self.raw_project['projectFiles']
+                self.dataSource = self.raw_project['dataSource']
+                self.modelSource = self.raw_project['modelSource']
+                self.scriptSource = self.raw_project['scriptSource']
                 if self.dataSource:
                     self.loadDataSource()
                 if self.modelSource:
@@ -101,61 +102,84 @@ class ProjectReader(object):
     def loadScriptSource(self):
         self.scriptSourceHandle = scriptSourceReader(self.scriptSource)
 
-    @property
-    def lastAccessTime(self):
-        return self.__lastAccessTime
-
-    @property
-    def createTime(self):
-        return self.__createTime
-
-    @property
-    def projectName(self):
-        return self.__projectName
-
-    @property
-    def projectPath(self):
-        return self.__projectPath
-
-    @property
-    def projectFiles(self):
-        return self.__projectFiles
-
     def setLastAccessTime(self, time: datetime):
         # set property
-        self.__lastAccessTime = time
+        self.lastAccessTime = time
         self.updateToYamlDict()
 
     def setProjectName(self, name: str):
-        self.__projectName = name
+        self.projectName = name
         self.updateToYamlDict()
 
     def setProjectPath(self, path: str):
-        self.__projectPath = path
+        self.projectPath = path
         self.updateToYamlDict()
 
     def setProjectFiles(self, files: dict):
-        self.__projectFiles = files
+        self.projectFiles = files
         self.updateToYamlDict()
 
     def updateToYamlDict(self):
         # update information to yaml dict
-        self.__raw_project['lastAccessTime'] = self.__lastAccessTime
-        self.__raw_project['projectName'] = self.__projectName
-        self.__raw_project['projectPath'] = self.__projectPath
-        self.__raw_project['projectFiles'] = self.__projectFiles
-        self.__raw_project['dataSource'] = self.dataSource
-        self.__raw_project['modelSource'] = self.modelSource
-        self.__raw_project['scriptSource'] = self.scriptSource
+        self.raw_project['lastAccessTime'] = self.lastAccessTime
+        self.raw_project['projectName'] = self.projectName
+        self.raw_project['projectPath'] = self.projectPath
+        self.raw_project['projectFiles'] = self.projectFiles
+        self.raw_project['dataSource'] = self.dataSource
+        self.raw_project['modelSource'] = self.modelSource
+        self.raw_project['scriptSource'] = self.scriptSource
 
     def saveToYaml(self):
         # save yaml dict to project file
         with open(self.yamlFile, 'w') as f:
-            yaml.safe_dump(self.__raw_project, f, default_flow_style=False)
+            yaml.safe_dump(self.raw_project, f, default_flow_style=False)
 
 
-class dataSourceReader(object):
+class sourceReader(metaclass=abc.ABCMeta):
     def __init__(self, yamlFile):
+        self.yamlFile = yamlFile
+        self.raw_data = None
+        self.lastUpdateTime = None
+        self.fileClassList = []
+
+        # logger
+        self.__logger = logging.getLogger('debug')
+        self.__logger.setLevel(logging.INFO)
+
+    @abc.abstractmethod
+    def loadYaml(self):
+        pass
+
+    def setFileClassList(self, *args):
+        for c in args:
+            self.fileClassList.append(c)
+
+    @property
+    def lastUpdateTimeLocal(self):
+        return self.lastUpdateTime.replace(tzinfo=timezone.utc).astimezone(tz=None).strftime('%y/%m/%d %H:%M:%S')
+
+    def updateToYaml(self):
+        # update information to yaml dict
+        with open(self.yamlFile, 'w') as f:
+            yaml.safe_dump(self.raw_data, f, default_flow_style=False)
+
+    def updateTime(self):
+        self.lastUpdateTime = datetime.utcnow()
+        self.raw_data['lastUpdateTime'] = self.lastUpdateTime
+        self.updateToYaml()
+
+    def getAllPath(self):
+        r = []
+        for d in self.fileClassList:
+            if d:
+                for uid, path in d.items():
+                    r.append(path)
+        return r
+
+
+class dataSourceReader(sourceReader):
+    def __init__(self, yamlFile):
+        super().__init__(yamlFile)
         self.code = {
             '00': 'train_csv',
             '01': 'test_csv',
@@ -166,20 +190,16 @@ class dataSourceReader(object):
             'EE': 'otherImageDir',
             'FF': 'plutoDataSets',
         }
-        self.yamlFile = yamlFile
+
         # local storage
-        self.__raw_data = None
-        self.__lastUpdateTime = None
-        self.__dataSourceWeb = None
-        self.__csvFiles = {}
-        self.__imageDirs = {}
-        self.__plutoDataSets = {}
-        self.__totalSize = ''
-        # logger
-        self.__logger = logging.getLogger('debug')
-        self.__logger.setLevel(logging.INFO)
+        self.dataSourceWeb = None
+        self.csvFiles = {}
+        self.imageDirs = {}
+        self.plutoDataSets = {}
+        self.totalSize = ''
+
         # load yaml file
-        self.loadYaml(yamlFile)
+        self.loadYaml()
 
     def parseCSVFiles(self):
         parsedCSVDict = {
@@ -190,8 +210,8 @@ class dataSourceReader(object):
             'notFoundFile': [],
             'badUID': [],
         }
-        if len(self.__csvFiles) > 0:
-            for uid, filePath in self.__csvFiles.items():
+        if len(self.csvFiles) > 0:
+            for uid, filePath in self.csvFiles.items():
                 if os.path.exists(filePath):
                     if uid[:2] not in self.code:
                         parsedCSVDict['badUID'].append((uid, filePath))
@@ -212,8 +232,8 @@ class dataSourceReader(object):
             'badUID': [],
             'notFoundFile': [],
         }
-        if len(self.__imageDirs) > 0:
-            for uid, filePath in self.__imageDirs.items():
+        if len(self.imageDirs) > 0:
+            for uid, filePath in self.imageDirs.items():
                 if os.path.exists(filePath):
                     if uid[:2] not in self.code:
                         parsedImageDict['badUID'].append((uid, filePath))
@@ -226,68 +246,33 @@ class dataSourceReader(object):
         else:
             return None
 
-    @property
-    def lastUpdateTime(self):
-        return self.__lastUpdateTime
-
-    @property
-    def lastUpdateTimeLocal(self):
-        return self.__lastUpdateTime.replace(tzinfo=timezone.utc).astimezone(tz=None).strftime('%y/%m/%d %H:%M:%S')
-
-    @property
-    def csvFiles(self):
-        return self.__csvFiles
-
-    @property
-    def imageDirs(self):
-        return self.__imageDirs
-
-    def loadYaml(self, yamlFile: str):
-        with open(yamlFile, 'r') as f:
+    def loadYaml(self):
+        with open(self.yamlFile, 'r') as f:
             try:
-                self.__raw_data = yaml.safe_load(f)
-                self.__lastUpdateTime = self.__raw_data['lastUpdateTime']
-                self.__csvFiles = self.__raw_data['csvFiles']
-                self.__imageDirs = self.__raw_data['imageDirs']
-                self.__totalSize = self.__raw_data['totalSize']
-                self.__plutoDataSets = self.__raw_data['plutoDataSet']
+                self.raw_data = yaml.safe_load(f)
+                self.lastUpdateTime = self.raw_data['lastUpdateTime']
+                self.csvFiles = self.raw_data['csvFiles']
+                self.imageDirs = self.raw_data['imageDirs']
+                self.totalSize = self.raw_data['totalSize']
+                self.plutoDataSets = self.raw_data['plutoDataSet']
+                super().setFileClassList(self.plutoDataSets)
             except yaml.YAMLError:
-                self.__logger.error('yaml file error: ' + yamlFile)
-
-    def updateToYaml(self):
-        with open(self.yamlFile, 'w') as f:
-            yaml.safe_dump(self.__raw_data, f, default_flow_style=False)
+                self.__logger.error('yaml file error: ' + self.yamlFile)
 
     def addCSVFile(self, uid: str, filePath: str):  # TODO
-        self.__csvFiles[uid] = filePath
-        self.__raw_data['csvFiles'] = self.__csvFiles
+        self.csvFiles[uid] = filePath
+        self.raw_data['csvFiles'] = self.csvFiles
         self.updateToYaml()
 
     def addImageDir(self, uid: str, imageDir: str):  # TODO
-        self.__imageDirs[uid] = imageDir
-        self.__raw_data['imageDirs'] = self.__imageDirs
+        self.imageDirs[uid] = imageDir
+        self.raw_data['imageDirs'] = self.imageDirs
         self.updateToYaml()
 
-    def updateTime(self):
-        self.__lastUpdateTime = datetime.utcnow()
-        self.__raw_data['lastUpdateTime'] = self.__lastUpdateTime
-        self.updateToYaml()
 
-    def getAllData(self, select='path'):
-        r = []
-        for d in [self.__plutoDataSets]:
-            if d:
-                for uid, dataPath in d.items():
-                    dataHandle = dataLoader(dataPath)
-                    if select == 'path':
-                        r.append(dataPath)
-                    else:
-                        r.append((uid, dataPath, dataHandle))
-        return r
-
-
-class scriptSourceReader(object):
+class scriptSourceReader(sourceReader):
     def __init__(self, yamlFile):
+        super().__init__(yamlFile)
         self.scriptCode = {
             '00': 'preprocess',
             '01': 'postprocess',
@@ -316,89 +301,47 @@ class scriptSourceReader(object):
         }
         self.yamlFile = yamlFile
         # local storage
-        self.__raw_data = None
-        self.__lastUpdateTime = None
-        self.__processScripts = {}
-        self.__visualizeScripts = {}
-        self.__modelScripts = {}
+        self.raw_data = None
+        self.lastUpdateTime = None
+        self.processScripts = {}
+        self.visualizeScripts = {}
+        self.modelScripts = {}
         # logger
         self.__logger = logging.getLogger('debug')
         self.__logger.setLevel(logging.INFO)
         # load yaml file
-        self.loadYaml(yamlFile)
+        self.loadYaml()
 
-    @property
-    def lastUpdateTime(self):
-        return self.__lastUpdateTime
-
-    @property
-    def lastUpdateTimeLocal(self):
-        return self.__lastUpdateTime.replace(tzinfo=timezone.utc).astimezone(tz=None).strftime('%y/%m/%d %H:%M:%S')
-
-    @property
-    def processScripts(self):
-        return self.__processScripts
-
-    @property
-    def modelScripts(self):
-        return self.__modelScripts
-
-    @property
-    def visualizeScripts(self):
-        return self.__visualizeScripts
-
-    def loadYaml(self, yamlFile: str):
-        with open(yamlFile, 'r') as f:
+    def loadYaml(self):
+        with open(self.yamlFile, 'r') as f:
             try:
-                self.__raw_data = yaml.safe_load(f)
-                self.__lastUpdateTime = self.__raw_data['lastUpdateTime']
-                self.__processScripts = self.__raw_data['processScripts']
-                self.__visualizeScripts = self.__raw_data['visualizeScripts']
-                self.__modelScripts = self.__raw_data['modelScripts']
-
+                self.raw_data = yaml.safe_load(f)
+                self.lastUpdateTime = self.raw_data['lastUpdateTime']
+                self.processScripts = self.raw_data['processScripts']
+                self.visualizeScripts = self.raw_data['visualizeScripts']
+                self.modelScripts = self.raw_data['modelScripts']
+                super().setFileClassList(self.processScripts, self.modelScripts, self.visualizeScripts)
             except yaml.YAMLError:
-                self.__logger.error('yaml file error: ' + yamlFile)
-
-    def updateToYaml(self):
-        # update information to yaml dict
-
-        with open(self.yamlFile, 'w') as f:
-            yaml.safe_dump(self.__raw_data, f, default_flow_style=False)
+                self.__logger.error('yaml file error: ' + self.yamlFile)
 
     def addScriptFile(self, uid: str, filePath: str, scriptType='processScripts'):  # TODO
         if scriptType == 'processScripts':
-            self.__processScripts[uid] = filePath
-            self.__raw_data['processScripts'] = self.__processScripts
+            self.processScripts[uid] = filePath
+            self.raw_data['processScripts'] = self.processScripts
         elif scriptType == 'visualizeScripts':
-            self.__visualizeScripts[uid] = filePath
-            self.__raw_data['visualizeScripts'] = self.__visualizeScripts
+            self.visualizeScripts[uid] = filePath
+            self.raw_data['visualizeScripts'] = self.visualizeScripts
         elif scriptType == 'modelScripts':
-            self.__modelScripts[uid] = filePath
-            self.__raw_data['modelScripts'] = self.__modelScripts
+            self.modelScripts[uid] = filePath
+            self.raw_data['modelScripts'] = self.modelScripts
         else:
             self.__logger.error('unknown script type: ' + str(scriptType))
         self.updateToYaml()
 
-    def updateTime(self):
-        self.__lastUpdateTime = datetime.utcnow()
-        self.__raw_data['lastUpdateTime'] = self.__lastUpdateTime
-        self.updateToYaml()
 
-    def getAllScript(self, select='path'):
-        r = []
-        for d in [self.__processScripts, self.__modelScripts, self.__visualizeScripts]:
-            if d:
-                for uid, scriptPath in d.items():
-                    handle = scriptLoader(scriptPath)
-                    if select == 'path':
-                        r.append(scriptPath)
-                    else:
-                        r.append((uid, scriptPath, handle))
-        return r
-
-
-class modelSourceReader(object):
+class modelSourceReader(sourceReader):
     def __init__(self, yamlFile):
+        super().__init__(yamlFile)
         self.modelCode = {
             '40': 'lightgbm',
             '41': 'xgboost',
@@ -424,85 +367,42 @@ class modelSourceReader(object):
         }
         self.yamlFile = yamlFile
         # local storage
-        self.__raw_data = None
-        self.__lastUpdateTime = None
-        self.__DL_classification = {}
-        self.__DL_segmentation = {}
-        self.__ML_model = {}
+        self.raw_data = None
+        self.lastUpdateTime = None
+        self.DL_classification = {}
+        self.DL_segmentation = {}
+        self.ML_model = {}
         # logger
         self.__logger = logging.getLogger('debug')
         self.__logger.setLevel(logging.INFO)
         # load yaml file
-        self.loadYaml(yamlFile)
+        self.loadYaml()
 
-    @property
-    def lastUpdateTime(self):
-        return self.__lastUpdateTime
-
-    @property
-    def lastUpdateTimeLocal(self):
-        return self.__lastUpdateTime.replace(tzinfo=timezone.utc).astimezone(tz=None).strftime('%y/%m/%d %H:%M:%S')
-
-    @property
-    def DL_classification(self):
-        return self.__DL_classification
-
-    @property
-    def DL_segmentation(self):
-        return self.__DL_segmentation
-
-    @property
-    def ML_model(self):
-        return self.__ML_model
-
-    def loadYaml(self, yamlFile: str):
-        with open(yamlFile, 'r') as f:
+    def loadYaml(self):
+        with open(self.yamlFile, 'r') as f:
             try:
-                self.__raw_data = yaml.safe_load(f)
-                self.__lastUpdateTime = self.__raw_data['lastUpdateTime']
-                self.__DL_classification = self.__raw_data['DL_classification']
-                self.__DL_segmentation = self.__raw_data['DL_segmentation']
-                self.__ML_model = self.__raw_data['ML_model']
-
+                self.raw_data = yaml.safe_load(f)
+                self.lastUpdateTime = self.raw_data['lastUpdateTime']
+                self.DL_classification = self.raw_data['DL_classification']
+                self.DL_segmentation = self.raw_data['DL_segmentation']
+                self.ML_model = self.raw_data['ML_model']
+                super().setFileClassList(self.DL_classification, self.DL_segmentation, self.ML_model)
             except yaml.YAMLError:
-                self.__logger.error('yaml file error: ' + yamlFile)
-
-    def updateToYaml(self):
-        # update information to yaml dict
-
-        with open(self.yamlFile, 'w') as f:
-            yaml.safe_dump(self.__raw_data, f, default_flow_style=False)
+                self.__logger.error('yaml file error: ' + self.yamlFile)
 
     def addModelFile(self, uid: str, filePath: str, modelType='DL_classification'):  # TODO
         if modelType == 'DL_classification':
-            self.__DL_classification[uid] = filePath
-            self.__raw_data['DL_classification'] = self.__DL_classification
+            self.DL_classification[uid] = filePath
+            self.raw_data['DL_classification'] = self.DL_classification
         elif modelType == 'DL_segmentation':
-            self.__DL_segmentation[uid] = filePath
-            self.__raw_data['DL_segmentation'] = self.__DL_segmentation
+            self.DL_segmentation[uid] = filePath
+            self.raw_data['DL_segmentation'] = self.DL_segmentation
         elif modelType == 'ML_model':
-            self.__ML_model[uid] = filePath
-            self.__raw_data['ML_model'] = self.__ML_model
+            self.ML_model[uid] = filePath
+            self.raw_data['ML_model'] = self.ML_model
         else:
             self.__logger.error('unknown script type: ' + str(modelType))
         self.updateToYaml()
-
-    def updateTime(self):
-        self.__lastUpdateTime = datetime.utcnow()
-        self.__raw_data['lastUpdateTime'] = self.__lastUpdateTime
-        self.updateToYaml()
-
-    def getAllModel(self, select='path'):
-        r = []
-        for d in [self.__DL_classification, self.__DL_segmentation, self.__ML_model]:
-            if d:
-                for uid, modelPath in d.items():
-                    handle = modelLoader(modelPath)
-                    if select == 'path':
-                        r.append(modelPath)
-                    else:
-                        r.append((uid, modelPath, handle))
-        return r
 
 
 class dataLoader(object):
@@ -517,7 +417,7 @@ class dataLoader(object):
             'EE': 'otherImageDir',
             'FF': 'plutoDataSets',
         }
-        self.__raw_data = None
+        self.raw_data = None
         self.dataSourceWeb = None
         self.lastUpdateTime = None
         self.dataSource = None
@@ -534,29 +434,29 @@ class dataLoader(object):
     def loadData(self, yamlFile):
         with open(yamlFile, 'r') as f:
             try:
-                self.__raw_data = yaml.safe_load(f)
-                self.lastUpdateTime = self.__raw_data['lastUpdateTime']
-                self.dataSourceWeb = self.__raw_data['dataSourceWeb']
-                self.dataSource = self.__raw_data['dataSource']
-                self.scriptSource = self.__raw_data['scriptSource']
-                self.dataType = self.__raw_data['dataType']
-                self.dataFiles = self.__raw_data['dataFiles']
-                self.dataDescribe = self.__raw_data['dataDescribe']
-                self.preprocessScript = self.__raw_data['preprocessScript']
+                self.raw_data = yaml.safe_load(f)
+                self.lastUpdateTime = self.raw_data['lastUpdateTime']
+                self.dataSourceWeb = self.raw_data['dataSourceWeb']
+                self.dataSource = self.raw_data['dataSource']
+                self.scriptSource = self.raw_data['scriptSource']
+                self.dataType = self.raw_data['dataType']
+                self.dataFiles = self.raw_data['dataFiles']
+                self.dataDescribe = self.raw_data['dataDescribe']
+                self.preprocessScript = self.raw_data['preprocessScript']
             except yaml.YAMLError:
                 self.__logger.error('yaml file error: ' + yamlFile)
 
     def saveToYaml(self):
-        self.__raw_data['lastUpdateTime'] = self.lastUpdateTime
-        self.__raw_data['dataSourceWeb'] = self.dataSourceWeb
-        self.__raw_data['dataSource'] = self.dataSource
-        self.__raw_data['scriptSource'] = self.scriptSource
-        self.__raw_data['dataType'] = self.dataType
-        self.__raw_data['dataFiles'] = self.dataFiles
-        self.__raw_data['dataDescribe'] = self.dataDescribe
-        self.__raw_data['preprocessScript'] = self.preprocessScript
+        self.raw_data['lastUpdateTime'] = self.lastUpdateTime
+        self.raw_data['dataSourceWeb'] = self.dataSourceWeb
+        self.raw_data['dataSource'] = self.dataSource
+        self.raw_data['scriptSource'] = self.scriptSource
+        self.raw_data['dataType'] = self.dataType
+        self.raw_data['dataFiles'] = self.dataFiles
+        self.raw_data['dataDescribe'] = self.dataDescribe
+        self.raw_data['preprocessScript'] = self.preprocessScript
         with open(self.yamlFile, 'w') as f:
-            yaml.safe_dump(self.__raw_data, f, default_flow_style=False)
+            yaml.safe_dump(self.raw_data, f, default_flow_style=False)
 
 
 class modelLoader(object):
@@ -584,7 +484,7 @@ class modelLoader(object):
             'C2': 'PSPNet',
             'C3': 'Linknet',
         }
-        self.__raw_model = None
+        self.raw_model = None
         self.lastUpdateTime = None
         self.scriptSource = None
         self.trainData = None
@@ -603,34 +503,34 @@ class modelLoader(object):
     def loadModel(self, yamlFile: str):
         with open(yamlFile, 'r') as f:
             try:
-                self.__raw_model = yaml.safe_load(f)
-                self.lastUpdateTime = self.__raw_model['lastUpdateTime']
-                self.scriptSource = self.__raw_model['scriptSource']
-                self.trainData = self.__raw_model['trainData']
-                self.testData = self.__raw_model['testData']
-                self.usingValData = self.__raw_model['usingValData']
-                self.modelType = self.__raw_model['modelType']
-                self.param = self.__raw_model['param']
-                self.modelDescribe = self.__raw_model['modelDescribe']
-                self.modelScript = self.__raw_model['modelScript']
-                self.postProcessScript = self.__raw_model['postProcessScript']
+                self.raw_model = yaml.safe_load(f)
+                self.lastUpdateTime = self.raw_model['lastUpdateTime']
+                self.scriptSource = self.raw_model['scriptSource']
+                self.trainData = self.raw_model['trainData']
+                self.testData = self.raw_model['testData']
+                self.usingValData = self.raw_model['usingValData']
+                self.modelType = self.raw_model['modelType']
+                self.param = self.raw_model['param']
+                self.modelDescribe = self.raw_model['modelDescribe']
+                self.modelScript = self.raw_model['modelScript']
+                self.postProcessScript = self.raw_model['postProcessScript']
             except yaml.YAMLError:
                 self.__logger.error('yaml file error: ' + yamlFile)
 
     def saveToYaml(self):
-        self.__raw_model['lastUpdateTime'] = self.lastUpdateTime
-        self.__raw_model['scriptSource'] = self.scriptSource
-        self.__raw_model['trainData'] = self.trainData
-        self.__raw_model['testData'] = self.testData
-        self.__raw_model['usingValData'] = self.usingValData
-        self.__raw_model['modelType'] = self.modelType
-        self.__raw_model['param'] = self.param
-        self.__raw_model['modelDescribe'] = self.modelDescribe
-        self.__raw_model['modelScript'] = self.modelScript
-        self.__raw_model['postProcessScript'] = self.postProcessScript
+        self.raw_model['lastUpdateTime'] = self.lastUpdateTime
+        self.raw_model['scriptSource'] = self.scriptSource
+        self.raw_model['trainData'] = self.trainData
+        self.raw_model['testData'] = self.testData
+        self.raw_model['usingValData'] = self.usingValData
+        self.raw_model['modelType'] = self.modelType
+        self.raw_model['param'] = self.param
+        self.raw_model['modelDescribe'] = self.modelDescribe
+        self.raw_model['modelScript'] = self.modelScript
+        self.raw_model['postProcessScript'] = self.postProcessScript
 
         with open(self.yamlFile, 'w') as f:
-            yaml.safe_dump(self.__raw_model, f, default_flow_style=False)
+            yaml.safe_dump(self.raw_model, f, default_flow_style=False)
 
 
 class scriptLoader(object):
@@ -640,4 +540,4 @@ class scriptLoader(object):
 
 if __name__ == '__main__':
     p = ProjectReader('../test/testProject_1/project.pluto')
-    print(p.dataSourceHandle.getAllData())
+    print(p.dataSourceHandle.getAllPath())
