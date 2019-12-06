@@ -164,6 +164,9 @@ class mainWindow(QMainWindow):
             projectItem.triggered.connect(self.openProject)
             self.projectListLayout.addWidget(projectItem)
 
+    def newProject(self):  # TODO
+        pass
+
     def openProject(self, handle: ProjectReader):
         if self.openedProject.isExist(handle):
             QMessageBox.information(self, 'open project', "project \"" + handle.projectName + "\" has been opened")

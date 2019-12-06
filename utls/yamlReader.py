@@ -537,6 +537,29 @@ class scriptLoader(object):
         self.scFile = scFile
 
 
+class initProject(object):
+    def __init__(self):
+        self.projectPath = None
+        self.raw_project = None
+
+        self.dataSource = None
+        self.modelSource = None
+        self.scriptSource = None
+        self.resultSource = None
+
+        self.sourcePathList = []
+        self.yamlDataList = []
+
+    def saveTo(self):
+        for sourcePath, yamlData in zip(self.sourcePathList, self.yamlDataList):
+            with open(sourcePath, 'w') as f:
+                yaml.safe_dump(yamlData, f, default_flow_style=False)
+
+        with open(self.projectPath, 'w') as f:
+            yaml.safe_dump(self.raw_project, f, default_flow_style=False)
+
+
+
 if __name__ == '__main__':
     p = ProjectReader('../test/testProject_1/project.pluto')
     print(p.dataSourceHandle.getAllPath())
