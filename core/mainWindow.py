@@ -266,7 +266,8 @@ class mainWindow(QMainWindow):
         tabWidget.addTab(projectMainPage, 'MainPage')
         return tabManager
 
-    def getProjectDetail(self, tabManager: TabManager):
+    @staticmethod
+    def getProjectDetail(tabManager: TabManager):
         info = dict()
         handle = tabManager.handle
         info['ID'] = handle.yamlFile

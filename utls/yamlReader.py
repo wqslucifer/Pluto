@@ -550,6 +550,36 @@ class initProject(object):
         self.sourcePathList = []
         self.yamlDataList = []
 
+    def initProject(self):
+        dataSourcePath = os.path.join(self.projectPath, 'data')
+        modelSourcePath = os.path.join(self.projectPath, 'model')
+        scriptSourcePath = os.path.join(self.projectPath, 'script')
+        resultSourcePath = os.path.join(self.projectPath, 'result')
+
+
+
+
+    def initDataSource(self):
+        self.dataSource = dict()
+        self.dataSource['lastUpdateTime'] = datetime.utcnow()
+        self.dataSource['dataSourceWeb'] = ''
+        self.dataSource['totalSize'] = ''
+        self.dataSource['csvFiles'] = []
+        self.dataSource['imageDirs'] = []
+        self.dataSource['plutoDataSet'] = []
+
+    def initModelSource(self):
+        self.modelSource['lastUpdateTime'] = datetime.utcnow()
+        self.modelSource['ML_model'] = []
+        self.modelSource['DL_classification'] = []
+        self.modelSource['DL_segmentation'] = []
+
+    def scriptSource(self):
+        self.scriptSource['lastUpdateTime'] = datetime.utcnow()
+        self.scriptSource['processScripts'] = []
+        self.scriptSource['visualizeScripts'] = []
+        self.scriptSource['modelScripts'] = []
+
     def saveTo(self):
         for sourcePath, yamlData in zip(self.sourcePathList, self.yamlDataList):
             with open(sourcePath, 'w') as f:
@@ -557,7 +587,6 @@ class initProject(object):
 
         with open(self.projectPath, 'w') as f:
             yaml.safe_dump(self.raw_project, f, default_flow_style=False)
-
 
 
 if __name__ == '__main__':
