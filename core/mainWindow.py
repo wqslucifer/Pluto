@@ -22,7 +22,7 @@ from PyQt5.uic import loadUi
 
 from core.customLayout import FlowLayout
 from core.customWidget import ProjectWidget, CollapsibleTabWidget, RollingLabel, ColorTabWidget
-
+from core.dialogs.newProjectDialog import newProjectDialog
 from utls.yamlReader import ProjectReader
 from utls.structure import Queue, ProjectQueue, TabManager
 
@@ -53,6 +53,8 @@ class mainWindow(QMainWindow):
         self.handleToTabWidget = dict()
         ###############################
         # menu
+        newProjectMenu = self.ui.actionNew_Project
+        newProjectMenu.triggered.connect(self.newProjectDialog)
         openProjectMenu = self.ui.actionOpen_Project
         openProjectMenu.triggered.connect(self.openProjectDialog)
         saveProjectMenu = self.ui.actionSave_Project
@@ -163,6 +165,10 @@ class mainWindow(QMainWindow):
                                         projectHandle.lastAccessTime, projectHandle)
             projectItem.triggered.connect(self.openProject)
             self.projectListLayout.addWidget(projectItem)
+
+    def newProjectDialog(self):
+        dialog = newProjectDialog(self)
+        dialog.show()
 
     def newProject(self):  # TODO
         pass

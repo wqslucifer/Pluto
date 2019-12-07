@@ -550,14 +550,20 @@ class initProject(object):
         self.sourcePathList = []
         self.yamlDataList = []
 
+        self.initProject()
+        self.saveTo()
+
     def initProject(self):
         dataSourcePath = os.path.join(self.projectPath, 'data')
         modelSourcePath = os.path.join(self.projectPath, 'model')
         scriptSourcePath = os.path.join(self.projectPath, 'script')
         resultSourcePath = os.path.join(self.projectPath, 'result')
-
-
-
+        self.sourcePathList = [dataSourcePath, modelSourcePath, scriptSourcePath, resultSourcePath]
+        self.initDataSource()
+        self.initModelSource()
+        self.initScriptSource()
+        self.initResultSource()
+        self.yamlDataList = [self.dataSource, self.modelSource, self.scriptSource, self.resultSource]
 
     def initDataSource(self):
         self.dataSource = dict()
@@ -574,11 +580,14 @@ class initProject(object):
         self.modelSource['DL_classification'] = []
         self.modelSource['DL_segmentation'] = []
 
-    def scriptSource(self):
+    def initScriptSource(self):
         self.scriptSource['lastUpdateTime'] = datetime.utcnow()
         self.scriptSource['processScripts'] = []
         self.scriptSource['visualizeScripts'] = []
         self.scriptSource['modelScripts'] = []
+
+    def initResultSource(self):
+        self.resultSource['lastUpdateTime'] = datetime.utcnow()
 
     def saveTo(self):
         for sourcePath, yamlData in zip(self.sourcePathList, self.yamlDataList):

@@ -1,4 +1,7 @@
-
+class plutoDefaults(object):
+    def __init__(self):
+        self.projectHome = 'E:/project/Pluto/test'
+        self.projectPaths = ''
 
 
 class yamlReaderSetting(object):
