@@ -538,20 +538,20 @@ class scriptLoader(object):
 
 
 class initProject(object):
-    def __init__(self):
-        self.projectPath = None
+    def __init__(self, projectPath, projectName):
+        self.projectPath = projectPath
+        self.projectName = projectName
+        self.projectFile = os.path.join(projectPath, projectName + '.pluto')
         self.raw_project = None
 
-        self.dataSource = None
-        self.modelSource = None
-        self.scriptSource = None
-        self.resultSource = None
+        self.dataSource = dict()
+        self.modelSource = dict()
+        self.scriptSource = dict()
+        self.resultSource = dict()
 
         self.sourcePathList = []
         self.yamlDataList = []
-
-        self.initProject()
-        self.saveTo()
+        self.sourceName = ['data.source', 'model.source', 'script.source', 'result.source']
 
     def initProject(self):
         dataSourcePath = os.path.join(self.projectPath, 'data')
@@ -565,8 +565,24 @@ class initProject(object):
         self.initResultSource()
         self.yamlDataList = [self.dataSource, self.modelSource, self.scriptSource, self.resultSource]
 
+        # create project folder
+        if not os.path.exists(self.projectPath):
+            os.mkdir(self.projectPath)
+        else:
+            raise NotImplementedError('future: add overwrite folder feature to create new project')
+        with open(self.projectFile, 'w') as f:
+            yaml.safe_dump(self.raw_project, f, default_flow_style=False)
+        # create sub-folder for data model script and result
+        for sourcePath, yamlData, name in zip(self.sourcePathList, self.yamlDataList, self.sourceName):
+            if not os.path.exists(sourcePath):
+                os.mkdir(sourcePath)
+            else:
+                raise NotImplementedError('future: add overwrite folder feature to create new project')
+            with open(os.path.join(sourcePath, name), 'w') as f:
+                yaml.safe_dump(yamlData, f, default_flow_style=False)
+
+
     def initDataSource(self):
-        self.dataSource = dict()
         self.dataSource['lastUpdateTime'] = datetime.utcnow()
         self.dataSource['dataSourceWeb'] = ''
         self.dataSource['totalSize'] = ''
@@ -588,14 +604,6 @@ class initProject(object):
 
     def initResultSource(self):
         self.resultSource['lastUpdateTime'] = datetime.utcnow()
-
-    def saveTo(self):
-        for sourcePath, yamlData in zip(self.sourcePathList, self.yamlDataList):
-            with open(sourcePath, 'w') as f:
-                yaml.safe_dump(yamlData, f, default_flow_style=False)
-
-        with open(self.projectPath, 'w') as f:
-            yaml.safe_dump(self.raw_project, f, default_flow_style=False)
 
 
 if __name__ == '__main__':
