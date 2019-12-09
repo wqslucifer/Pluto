@@ -25,23 +25,31 @@ class newProjectDialog(QDialog):
         self.setLayout(self.layout)
         self.setFixedSize(750, 500)
         self.setModal(True)
-        self.newProject = None  # initProject handle
-        self.projectName = None
+        # initProject handle
+        self.newProject = None
+        # init widgets
         self.locationEdit = None
+        self.showDataFileEdit = None
+        self.showScriptFileEdit = None
+        # local variables
+        self.projectName = None
         self.currentIndex = 0
-
+        self.dataFiles = set()
+        self.dataDirs = set()
+        self.scriptFiles = set()
         self.plutoDefault = plutoDefaults()
         self.projectLocation = self.plutoDefault.projectHome
 
+        # add pages
         page1Widget = self.page1()
         self.layout.addWidget(page1Widget)
-        self.setLayout(self.layout)
-
         page2Widget = self.page2()
         self.layout.addWidget(page2Widget)
+        page3Widget = self.page3()
+        self.layout.addWidget(page3Widget)
+        # finish page init when all info is collected
         self.setLayout(self.layout)
-
-        self.layout.setCurrentIndex(1)
+        self.layout.setCurrentIndex(0)
 
     def page1(self):
         widget = QWidget(self)
@@ -99,11 +107,11 @@ class newProjectDialog(QDialog):
         addDataFileLine.setContentsMargins(5, 10, 5, 0)
         pageLayout.addLayout(addDataFileLine)
 
-        showDataFileEdit = QTextEdit(widget)
-        showDataFileEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        showDataFileEdit.setDisabled(True)
+        self.showDataFileEdit = QTextEdit(widget)
+        self.showDataFileEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.showDataFileEdit.setReadOnly(True)
         showDataFileLine = QHBoxLayout(None)
-        showDataFileLine.addWidget(showDataFileEdit)
+        showDataFileLine.addWidget(self.showDataFileEdit)
         showDataFileLine.setAlignment(Qt.AlignLeft)
         showDataFileLine.setContentsMargins(5, 5, 5, 5)
         pageLayout.addLayout(showDataFileLine)
@@ -124,6 +132,71 @@ class newProjectDialog(QDialog):
         nextButton.clicked.connect(self.onNextButton2Clicked)
         return widget
 
+    def page3(self):
+        widget = QWidget(self)
+        pageLayout = QVBoxLayout(widget)
+
+        addScriptFileButton = QPushButton('Add Files', widget)
+        addScriptFileLine = QHBoxLayout(None)
+        addScriptFileLine.addWidget(QLabel('Add Script Files:', widget))
+        addScriptFileLine.addStretch(0)
+        addScriptFileLine.addWidget(addScriptFileButton)
+        addScriptFileLine.setAlignment(Qt.AlignLeft)
+        addScriptFileLine.setContentsMargins(5, 10, 5, 0)
+        pageLayout.addLayout(addScriptFileLine)
+
+        self.showScriptFileEdit = QTextEdit(widget)
+        self.showScriptFileEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.showScriptFileEdit.setReadOnly(True)
+        showScriptFileLine = QHBoxLayout(None)
+        showScriptFileLine.addWidget(self.showScriptFileEdit)
+        showScriptFileLine.setAlignment(Qt.AlignLeft)
+        showScriptFileLine.setContentsMargins(5, 5, 5, 5)
+        pageLayout.addLayout(showScriptFileLine)
+
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine | QFrame.Sunken)
+        pageLayout.addWidget(line)
+
+        nextButton = QPushButton('Next', widget)
+        buttonLine = QHBoxLayout(None)
+        buttonLine.addWidget(nextButton)
+        buttonLine.setAlignment(Qt.AlignRight)
+        buttonLine.setContentsMargins(5, 0, 5, 10)
+        pageLayout.addLayout(buttonLine)
+
+        addScriptFileButton.clicked.connect(self.onAddScriptFileButtonClicked)
+        nextButton.clicked.connect(self.onNextButton3Clicked)
+        return widget
+
+    def finishPage(self):
+        widget = QWidget(self)
+        pageLayout = QVBoxLayout(widget)
+
+        showInfoEdit = QTextEdit(widget)
+        showInfoEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        showInfoEdit.setReadOnly(True)
+        showInfoLine = QHBoxLayout(None)
+        showInfoLine.addWidget(showInfoEdit)
+        showInfoLine.setAlignment(Qt.AlignLeft)
+        showInfoLine.setContentsMargins(5, 5, 5, 5)
+        pageLayout.addLayout(showInfoLine)
+        self.displayInfo(showInfoEdit)
+
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine | QFrame.Sunken)
+        pageLayout.addWidget(line)
+
+        finishButton = QPushButton('Finish', widget)
+        buttonLine = QHBoxLayout(None)
+        buttonLine.addWidget(finishButton)
+        buttonLine.setAlignment(Qt.AlignRight)
+        buttonLine.setContentsMargins(5, 0, 5, 10)
+        pageLayout.addLayout(buttonLine)
+
+        finishButton.clicked.connect(self.onFinishButtonClicked)
+        return widget
+
     def onProjectNameChanged(self, text):
         self.projectName = text
         if self.projectName:
@@ -139,7 +212,7 @@ class newProjectDialog(QDialog):
         if new_location:
             self.projectLocation = new_location
             if self.projectName:
-                self.locationEdit.setText(self.projectLocation + '/' + self.projectName)
+                self.locationEdit.setText(self.projectLocation + '/' + self.projectName + '.pluto')
             else:
                 self.locationEdit.setText(self.projectLocation)
 
@@ -163,16 +236,25 @@ class newProjectDialog(QDialog):
             self.layout.setCurrentIndex(self.currentIndex)
 
     def onNextButton2Clicked(self):
-        pass
+        self.currentIndex += 1
+        self.layout.setCurrentIndex(self.currentIndex)
+
+    def onNextButton3Clicked(self):
+        finishPageWidget = self.finishPage()
+        self.layout.addWidget(finishPageWidget)
+        self.currentIndex += 1
+        self.layout.setCurrentIndex(self.currentIndex)
 
     def onAddDataFileButtonClicked(self):
         dialog = QFileDialog(self)
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
-        dataFiles, _ = dialog.getOpenFileNames(self, "Add Data Files", "", "Supported Data (*.ds, *.csv)"
+        dataFiles, _ = dialog.getOpenFileNames(self, "Add Data Files", "", "Supported Data (*.ds *.csv);;"
                                                                            "Pluto Data (*.ds);; CSV Files (*.csv);; All Files (*.*)",
                                                options=options)
-        print(dataFiles)
+        self.dataFiles |= set(dataFiles)
+        print(self.dataFiles)
+        self.freshShowDataFileEdit()
 
     def onAddFolderButtonClicked(self):
         dialog = QFileDialog(self)
@@ -180,7 +262,9 @@ class newProjectDialog(QDialog):
 
         dataDirs = dialog.getExistingDirectory(self, "Add Directory", "",
                                                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
-        print(dataDirs)
+        self.dataDirs.add(dataDirs)
+        print(self.dataDirs)
+        self.freshShowDataFileEdit()
 
         # file_view = dialog.findChild(QListView, 'listView')
         # if file_view:
@@ -191,3 +275,60 @@ class newProjectDialog(QDialog):
         #
         # if dialog.exec():
         #     paths = dialog.selectedFiles()
+
+    def onAddScriptFileButtonClicked(self):
+        dialog = QFileDialog(self)
+        options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
+        scriptFiles, _ = dialog.getOpenFileNames(self, "Add Script Files", "", "Supported Data (*.py *.sc);;"
+                                                                               "Script Data (*.sc);; Python Files (*.py);; All Files (*.*)",
+                                                 options=options)
+        self.scriptFiles |= set(scriptFiles)
+        print(self.scriptFiles)
+        self.freshShowScriptFileEdit()
+
+    def freshShowDataFileEdit(self):
+        # self.showDataFileEdit = QTextEdit(None)
+        self.showDataFileEdit.setText('')
+        if self.dataFiles:
+            self.showDataFileEdit.append('Data Files: ')
+            for f in self.dataFiles:
+                self.showDataFileEdit.append(f)
+
+        if self.dataDirs:
+            self.showDataFileEdit.append('Data Dirs: ')
+            for d in self.dataDirs:
+                self.showDataFileEdit.append(d)
+
+    def freshShowScriptFileEdit(self):
+        # self.showDataFileEdit = QTextEdit(None)
+        self.showScriptFileEdit.setText('')
+        if self.scriptFiles:
+            self.showScriptFileEdit.append('Script Files: ')
+            for f in self.scriptFiles:
+                self.showScriptFileEdit.append(f)
+
+    def onFinishButtonClicked(self):
+        pass
+
+    def displayInfo(self, showInfoEdit: QTextEdit):
+        showInfoEdit.setText('')
+        showInfoEdit.setLineWrapMode(QTextEdit.FixedColumnWidth)
+        showInfoEdit.setLineWrapColumnOrWidth(130)
+        showInfoEdit.setFontPointSize(10)
+        showInfoEdit.append('Project Name: ' + self.projectName)
+        showInfoEdit.append('Project Location: ' + self.projectLocation)
+        showInfoEdit.append('-' * showInfoEdit.lineWrapColumnOrWidth())
+
+        showInfoEdit.append('Data Files: ' + str(len(self.dataFiles)) + ' Files')
+        for f in self.dataFiles:
+            showInfoEdit.append(f)
+        showInfoEdit.append('')
+        showInfoEdit.append('Data Dirs: ' + str(len(self.dataDirs)) + ' Dirs')
+        for d in self.dataDirs:
+            showInfoEdit.append(d)
+
+        showInfoEdit.append('-' * showInfoEdit.lineWrapColumnOrWidth())
+        showInfoEdit.append('Scripts: ' + str(len(self.scriptFiles)) + ' Scripts')
+        for s in self.scriptFiles:
+            showInfoEdit.append(s)
