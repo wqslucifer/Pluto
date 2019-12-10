@@ -93,6 +93,7 @@ class mainWindow(QMainWindow):
 
         self.initUI()
         self.initToolBar()
+        self.setContextMenuPolicy(Qt.NoContextMenu)  # close right click of mainWindow
 
     def initUI(self):
         self.mainStage.setLayout(self.mainLayout)
@@ -131,6 +132,7 @@ class mainWindow(QMainWindow):
         self.statusBar.setContentsMargins(10, 0, 0, 10)
         self.addToolBar(self.toolBar)
         self.setStatusBar(self.statusBar)
+
         # open
         self.openAction.setStatusTip('Open Project')
         self.openAction.triggered.connect(self.openProjectDialog)
@@ -169,9 +171,6 @@ class mainWindow(QMainWindow):
     def newProjectDialog(self):
         dialog = newProjectDialog(self)
         dialog.show()
-
-    def newProject(self):  # TODO
-        pass
 
     def openProject(self, handle: ProjectReader):
         if self.openedProject.isExist(handle):
