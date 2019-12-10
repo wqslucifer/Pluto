@@ -26,7 +26,7 @@ class newProjectDialog(QDialog):
         self.setFixedSize(750, 500)
         self.setModal(True)
         # initProject handle
-        self.newProject = None
+        self.newProject = initProject()
         # init widgets
         self.locationEdit = None
         self.showDataFileEdit = None
@@ -200,7 +200,7 @@ class newProjectDialog(QDialog):
     def onProjectNameChanged(self, text):
         self.projectName = text
         if self.projectName:
-            self.locationEdit.setText(self.projectLocation + '/' + self.projectName + '.pluto')
+            self.locationEdit.setText(self.projectLocation + '/' + self.projectName)
         else:
             self.locationEdit.setText(self.projectLocation)
 
@@ -212,7 +212,7 @@ class newProjectDialog(QDialog):
         if new_location:
             self.projectLocation = new_location
             if self.projectName:
-                self.locationEdit.setText(self.projectLocation + '/' + self.projectName + '.pluto')
+                self.locationEdit.setText(self.projectLocation + '/' + self.projectName)
             else:
                 self.locationEdit.setText(self.projectLocation)
 
@@ -221,7 +221,9 @@ class newProjectDialog(QDialog):
         if self.projectName:
             path = os.path.join(self.projectLocation, self.projectName)
         else:
-            path = os.path.join(self.projectLocation)
+            QMessageBox.warning(self, 'New Project', 'Please enter a project name',
+                                QMessageBox.Ok)
+            return
         if os.path.exists(path):
             r = QMessageBox.warning(self, 'New Project', 'This path is already existed, if still create project here?',
                                     QMessageBox.Yes | QMessageBox.No)
@@ -231,15 +233,18 @@ class newProjectDialog(QDialog):
                 print('No')
                 GO = False
         if GO:
-            self.newProject = initProject(path, self.projectName)
             self.currentIndex += 1
             self.layout.setCurrentIndex(self.currentIndex)
 
     def onNextButton2Clicked(self):
+        if self.dataFiles or self.dataDirs:
+            self.newProject.parseData(self.dataFiles, self.dataDirs)
         self.currentIndex += 1
         self.layout.setCurrentIndex(self.currentIndex)
 
     def onNextButton3Clicked(self):
+        if self.scriptFiles:
+            self.newProject.parseScript(self.scriptFiles)
         finishPageWidget = self.finishPage()
         self.layout.addWidget(finishPageWidget)
         self.currentIndex += 1
@@ -309,7 +314,8 @@ class newProjectDialog(QDialog):
                 self.showScriptFileEdit.append(f)
 
     def onFinishButtonClicked(self):
-        pass
+        self.newProject.initProject(os.path.join(self.projectLocation, self.projectName), self.projectName)
+        self.accept()
 
     def displayInfo(self, showInfoEdit: QTextEdit):
         showInfoEdit.setText('')
@@ -317,7 +323,7 @@ class newProjectDialog(QDialog):
         showInfoEdit.setLineWrapColumnOrWidth(130)
         showInfoEdit.setFontPointSize(10)
         showInfoEdit.append('Project Name: ' + self.projectName)
-        showInfoEdit.append('Project Location: ' + self.projectLocation)
+        showInfoEdit.append('Project Location: ' + self.projectLocation + '/' + self.projectName)
         showInfoEdit.append('-' * showInfoEdit.lineWrapColumnOrWidth())
 
         showInfoEdit.append('Data Files: ' + str(len(self.dataFiles)) + ' Files')

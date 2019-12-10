@@ -538,11 +538,12 @@ class scriptLoader(object):
 
 
 class initProject(object):
-    def __init__(self, projectPath, projectName):
-        self.projectPath = projectPath
-        self.projectName = projectName
-        self.projectFile = os.path.join(projectPath, projectName + '.pluto')
+    def __init__(self):
+        self.projectPath = None  # home path to the project
+        self.projectName = None  # project name == project home dir name
+        self.projectFile = None  # actual pluto project file
         self.raw_project = None
+        self.id_generator = IDGenerator()
 
         self.dataSource = dict()
         self.modelSource = dict()
@@ -553,18 +554,22 @@ class initProject(object):
         self.yamlDataList = []
         self.sourceName = ['data.source', 'model.source', 'script.source', 'result.source']
 
-    def initProject(self):
+        self.initDataSource()
+        self.initModelSource()
+        self.initScriptSource()
+        self.initResultSource()
+
+    def initProject(self, projectPath, projectName):
+        self.projectPath = projectPath  # home path to the project
+        self.projectName = projectName
+        self.projectFile = os.path.join(projectPath, projectName + '.pluto')
+
         dataSourcePath = os.path.join(self.projectPath, 'data')
         modelSourcePath = os.path.join(self.projectPath, 'model')
         scriptSourcePath = os.path.join(self.projectPath, 'script')
         resultSourcePath = os.path.join(self.projectPath, 'result')
         self.sourcePathList = [dataSourcePath, modelSourcePath, scriptSourcePath, resultSourcePath]
-        self.initDataSource()
-        self.initModelSource()
-        self.initScriptSource()
-        self.initResultSource()
         self.yamlDataList = [self.dataSource, self.modelSource, self.scriptSource, self.resultSource]
-
         # create project folder
         if not os.path.exists(self.projectPath):
             os.mkdir(self.projectPath)
@@ -581,29 +586,72 @@ class initProject(object):
             with open(os.path.join(sourcePath, name), 'w') as f:
                 yaml.safe_dump(yamlData, f, default_flow_style=False)
 
-
     def initDataSource(self):
         self.dataSource['lastUpdateTime'] = datetime.utcnow()
         self.dataSource['dataSourceWeb'] = ''
         self.dataSource['totalSize'] = ''
-        self.dataSource['csvFiles'] = []
-        self.dataSource['imageDirs'] = []
-        self.dataSource['plutoDataSet'] = []
+        self.dataSource['csvFiles'] = {}
+        self.dataSource['imageDirs'] = {}
+        self.dataSource['plutoDataSet'] = {}
 
     def initModelSource(self):
         self.modelSource['lastUpdateTime'] = datetime.utcnow()
-        self.modelSource['ML_model'] = []
-        self.modelSource['DL_classification'] = []
-        self.modelSource['DL_segmentation'] = []
+        self.modelSource['ML_model'] = {}
+        self.modelSource['DL_classification'] = {}
+        self.modelSource['DL_segmentation'] = {}
 
     def initScriptSource(self):
         self.scriptSource['lastUpdateTime'] = datetime.utcnow()
-        self.scriptSource['processScripts'] = []
-        self.scriptSource['visualizeScripts'] = []
-        self.scriptSource['modelScripts'] = []
+        self.scriptSource['scripts'] = {}
+        self.scriptSource['processScripts'] = {}
+        self.scriptSource['visualizeScripts'] = {}
+        self.scriptSource['modelScripts'] = {}
 
     def initResultSource(self):
         self.resultSource['lastUpdateTime'] = datetime.utcnow()
+
+    def parseData(self, dataFiles, dataDirs):
+        for f, i in zip(dataFiles, self.id_generator.genID('D')):
+            if f.endswith('csv'):
+                self.dataSource['csvFiles']['00E' + i] = f
+            elif f.endswith('ds'):
+                self.dataSource['plutoDataSet']['00E' + i] = f
+            else:
+                raise TypeError('unknown data file type')
+
+        for d, i in zip(dataDirs, self.id_generator.genID('D')):
+            self.dataSource['imageDirs']['00E' + i] = d
+
+    def parseScript(self, scriptList):
+        for s, i in zip(scriptList, self.id_generator.genID('S')):
+            self.scriptSource['scripts']['00E' + i] = s
+
+
+class IDGenerator(object):
+    def __init__(self):
+        self.n_data = 0
+        self.n_script = 0
+        self.n_model = 0
+        self.n_result = 0
+
+    def genID(self, t='D'):
+        while True:
+            n = None
+            if t == 'D':  # data
+                self.n_data += 1
+                n = self.n_data
+            elif t == 'M':  # model
+                self.n_model += 1
+                n = self.n_model
+            elif t == 'S':  # script
+                self.n_script += 1
+                n = self.n_script
+            elif t == 'R':  # result
+                self.n_result += 1
+                n = self.n_result
+            if n > 16 ** 5:
+                raise Exception('ID generator over flow')
+            yield '{:{fill}{width}{base}}'.format(n, fill='0', width='5', base='X')
 
 
 if __name__ == '__main__':
