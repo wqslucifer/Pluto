@@ -1,7 +1,12 @@
 import yaml
 import os
 import abc
+import sys
 import logging
+import importlib
+import importlib.machinery
+
+importlib.machinery.SOURCE_SUFFIXES.append('.sc')
 import numpy as np
 import pandas as pd
 from datetime import datetime, timezone
@@ -638,7 +643,8 @@ class initProject(object):
 
     def parseScript(self, scriptList):
         for s, i in zip(scriptList, self.id_generator.genID('S')):
-            self.scriptSource['scripts']['00E' + i] = s
+            scriptType, code = self.getScriptCode(s)
+            self.scriptSource[scriptType][code + i] = s
 
     def projectFileTree(self):
         root = dict()
@@ -647,20 +653,22 @@ class initProject(object):
             self.projectName + '.pluto'
         ]
         data = {'data': ['data.source']}
-        for d in list(self.dataSource['csvFiles'].values()) + \
-                 list(self.dataSource['imageDirs'].values()) + \
-                 list(self.dataSource['plutoDataSet'].values()):
-            data['data'].append(os.path.basename(d))
-
         model = {'model': ['model.source']}
         script = {'script': ['script.source']}
-        for s in list(self.scriptSource['scripts'].values()):
-            script['script'].append(os.path.basename(s))
         result = {'result': ['result.source']}
         project[self.projectName] += [data, model, script, result]
         root['root'] = project
         return root
 
+    def getScriptCode(self, filePath):
+        with add_path(os.path.dirname(filePath)):
+            module = importlib.import_module(os.path.basename(filePath).split('.')[0])
+            if hasattr(module, 'Setting') and hasattr(module.Setting, 'CODE') and hasattr(module.Setting,
+                                                                                          'SCRIPT_TYPE'):
+                return module.Setting.SCRIPT_TYPE, module.Setting.CODE + 'F'
+            else:
+                # log: script file is not recognized
+                return 'scripts', '00A'
 
 class IDGenerator(object):
     def __init__(self):
@@ -689,6 +697,24 @@ class IDGenerator(object):
             yield '{:{fill}{width}{base}}'.format(n, fill='0', width='5', base='X')
 
 
+class add_path:
+    def __init__(self, path):
+        self.path = path
+
+    def __enter__(self):
+        sys.path.insert(0, self.path)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        try:
+            sys.path.remove(self.path)
+        except ValueError:
+            pass
+
+
 if __name__ == '__main__':
-    p = ProjectReader('../test/testProject_1/project.pluto')
-    print(p.dataSourceHandle.getAllPath())
+    filePath = 'E:/project/Pluto/test/testProject_1/script/postprocessScript.sc'
+    root_path = os.path.dirname(os.path.join(filePath))
+    sys.path.insert(0, root_path)
+
+    module = importlib.import_module(os.path.basename(filePath).split('.')[0])
+    print(module.Setting.__dict__)
