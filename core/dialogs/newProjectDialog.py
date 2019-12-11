@@ -254,7 +254,8 @@ class newProjectDialog(QDialog):
         dialog = QFileDialog(self)
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
-        dataFiles, _ = dialog.getOpenFileNames(self, "Add Data Files", "", "Supported Data (*.ds *.csv);;"
+        dataFiles, _ = dialog.getOpenFileNames(self, "Add Data Files", self.plutoDefault.projectHome,
+                                               "Supported Data (*.ds *.csv);;"
                                                                            "Pluto Data (*.ds);; CSV Files (*.csv);; All Files (*.*)",
                                                options=options)
         self.dataFiles |= set(dataFiles)
@@ -265,7 +266,7 @@ class newProjectDialog(QDialog):
         dialog = QFileDialog(self)
         dialog.setOption(QFileDialog.DontUseNativeDialog, True)
 
-        dataDirs = dialog.getExistingDirectory(self, "Add Directory", "",
+        dataDirs = dialog.getExistingDirectory(self, "Add Directory", self.plutoDefault.projectHome,
                                                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         self.dataDirs.add(dataDirs)
         print(self.dataDirs)
@@ -285,7 +286,8 @@ class newProjectDialog(QDialog):
         dialog = QFileDialog(self)
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
-        scriptFiles, _ = dialog.getOpenFileNames(self, "Add Script Files", "", "Supported Data (*.py *.sc);;"
+        scriptFiles, _ = dialog.getOpenFileNames(self, "Add Script Files", self.plutoDefault.projectHome,
+                                                 "Supported Data (*.py *.sc);;"
                                                                                "Script Data (*.sc);; Python Files (*.py);; All Files (*.*)",
                                                  options=options)
         self.scriptFiles |= set(scriptFiles)

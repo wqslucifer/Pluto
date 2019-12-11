@@ -542,7 +542,7 @@ class initProject(object):
         self.projectPath = None  # home path to the project
         self.projectName = None  # project name == project home dir name
         self.projectFile = None  # actual pluto project file
-        self.raw_project = None
+        self.raw_project = dict()
         self.id_generator = IDGenerator()
 
         self.dataSource = dict()
@@ -575,8 +575,7 @@ class initProject(object):
             os.mkdir(self.projectPath)
         else:
             raise NotImplementedError('future: add overwrite folder feature to create new project')
-        with open(self.projectFile, 'w') as f:
-            yaml.safe_dump(self.raw_project, f, default_flow_style=False)
+
         # create sub-folder for data model script and result
         for sourcePath, yamlData, name in zip(self.sourcePathList, self.yamlDataList, self.sourceName):
             if not os.path.exists(sourcePath):
@@ -585,6 +584,7 @@ class initProject(object):
                 raise NotImplementedError('future: add overwrite folder feature to create new project')
             with open(os.path.join(sourcePath, name), 'w') as f:
                 yaml.safe_dump(yamlData, f, default_flow_style=False)
+        self.initProjectYaml()
 
     def initDataSource(self):
         self.dataSource['lastUpdateTime'] = datetime.utcnow()
@@ -610,6 +610,20 @@ class initProject(object):
     def initResultSource(self):
         self.resultSource['lastUpdateTime'] = datetime.utcnow()
 
+    def initProjectYaml(self):
+        # create project file
+        self.raw_project['createTime'] = datetime.utcnow()
+        self.raw_project['lastAccessTime'] = datetime.utcnow()
+        self.raw_project['projectFiles'] = self.projectFileTree()
+        self.raw_project['projectName'] = self.projectName
+        self.raw_project['projectPath'] = self.projectPath
+        self.raw_project['dataSource'] = os.path.join(self.projectPath, 'data', 'data.source')
+        self.raw_project['modelSource'] = os.path.join(self.projectPath, 'model', 'model.source')
+        self.raw_project['scriptSource'] = os.path.join(self.projectPath, 'script', 'script.source')
+        self.raw_project['resultSource'] = os.path.join(self.projectPath, 'result', 'result.source')
+        with open(self.projectFile, 'w') as f:
+            yaml.safe_dump(self.raw_project, f, default_flow_style=False)
+
     def parseData(self, dataFiles, dataDirs):
         for f, i in zip(dataFiles, self.id_generator.genID('D')):
             if f.endswith('csv'):
@@ -625,6 +639,27 @@ class initProject(object):
     def parseScript(self, scriptList):
         for s, i in zip(scriptList, self.id_generator.genID('S')):
             self.scriptSource['scripts']['00E' + i] = s
+
+    def projectFileTree(self):
+        root = dict()
+        project = dict()
+        project[self.projectName] = [
+            self.projectName + '.pluto'
+        ]
+        data = {'data': ['data.source']}
+        for d in list(self.dataSource['csvFiles'].values()) + \
+                 list(self.dataSource['imageDirs'].values()) + \
+                 list(self.dataSource['plutoDataSet'].values()):
+            data['data'].append(os.path.basename(d))
+
+        model = {'model': ['model.source']}
+        script = {'script': ['script.source']}
+        for s in list(self.scriptSource['scripts'].values()):
+            script['script'].append(os.path.basename(s))
+        result = {'result': ['result.source']}
+        project[self.projectName] += [data, model, script, result]
+        root['root'] = project
+        return root
 
 
 class IDGenerator(object):
