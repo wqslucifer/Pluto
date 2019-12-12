@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QDialog, QWidget, QLineEdit, QPushButton, QLayout, Q
 from PyQt5.QtGui import QResizeEvent, QIcon, QCursor
 from PyQt5.uic import loadUi
 from utls.yamlReader import initProject
-from utls.setting import plutoDefaults
+from utls.setting import plutoVariables
 
 import warnings
 
@@ -37,8 +37,8 @@ class newProjectDialog(QDialog):
         self.dataFiles = set()
         self.dataDirs = set()
         self.scriptFiles = set()
-        self.plutoDefault = plutoDefaults()
-        self.projectLocation = self.plutoDefault.projectHome
+        self.plutoVariables = plutoVariables()
+        self.projectLocation = self.plutoVariables.projectHome
 
         # add pages
         page1Widget = self.page1()
@@ -66,7 +66,7 @@ class newProjectDialog(QDialog):
         self.locationEdit = QLineEdit(widget)
         locationButton = QPushButton('...', widget)
         locationButton.setFixedWidth(30)
-        self.locationEdit.setText(self.plutoDefault.projectHome)
+        self.locationEdit.setText(self.plutoVariables.projectHome)
         locationLine = QHBoxLayout(None)
         locationLine.addWidget(QLabel('Location:', widget))
         locationLine.addWidget(self.locationEdit)
@@ -206,8 +206,7 @@ class newProjectDialog(QDialog):
 
     def onLocationButtonClicked(self):
         dialog = QFileDialog(self)
-        # dialog.setDirectory(self.plutoDefault.projectHome)
-        new_location = dialog.getExistingDirectory(self, "Location", self.plutoDefault.projectHome,
+        new_location = dialog.getExistingDirectory(self, "Location", self.plutoVariables.projectHome,
                                                    QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         if new_location:
             self.projectLocation = new_location
@@ -254,9 +253,9 @@ class newProjectDialog(QDialog):
         dialog = QFileDialog(self)
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
-        dataFiles, _ = dialog.getOpenFileNames(self, "Add Data Files", self.plutoDefault.projectHome,
+        dataFiles, _ = dialog.getOpenFileNames(self, "Add Data Files", self.plutoVariables.projectHome,
                                                "Supported Data (*.ds *.csv);;"
-                                                                           "Pluto Data (*.ds);; CSV Files (*.csv);; All Files (*.*)",
+                                               "Pluto Data (*.ds);; CSV Files (*.csv);; All Files (*.*)",
                                                options=options)
         self.dataFiles |= set(dataFiles)
         print(self.dataFiles)
@@ -266,7 +265,7 @@ class newProjectDialog(QDialog):
         dialog = QFileDialog(self)
         dialog.setOption(QFileDialog.DontUseNativeDialog, True)
 
-        dataDirs = dialog.getExistingDirectory(self, "Add Directory", self.plutoDefault.projectHome,
+        dataDirs = dialog.getExistingDirectory(self, "Add Directory", self.plutoVariables.projectHome,
                                                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         self.dataDirs.add(dataDirs)
         print(self.dataDirs)
@@ -286,9 +285,9 @@ class newProjectDialog(QDialog):
         dialog = QFileDialog(self)
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
-        scriptFiles, _ = dialog.getOpenFileNames(self, "Add Script Files", self.plutoDefault.projectHome,
+        scriptFiles, _ = dialog.getOpenFileNames(self, "Add Script Files", self.plutoVariables.projectHome,
                                                  "Supported Data (*.py *.sc);;"
-                                                                               "Script Data (*.sc);; Python Files (*.py);; All Files (*.*)",
+                                                 "Script Data (*.sc);; Python Files (*.py);; All Files (*.*)",
                                                  options=options)
         self.scriptFiles |= set(scriptFiles)
         print(self.scriptFiles)

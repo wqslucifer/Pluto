@@ -25,19 +25,14 @@ from core.customWidget import ProjectWidget, CollapsibleTabWidget, RollingLabel,
 from core.dialogs.newProjectDialog import newProjectDialog
 from utls.yamlReader import ProjectReader
 from utls.structure import Queue, ProjectQueue, TabManager
-
+from utls.setting import plutoVariables
 
 import warnings
 
 warnings.filterwarnings('ignore')
 
-PROJECT_HOME = 'E:/project/Pluto/test'  # path to default project dirs
-PROJECT_PATHS = ['E:/project/Pluto/test/testProject_1/project.pluto',
-                 'E:/project/Pluto/test/testProject_2/project2.pluto']  # project paths that are added to pluto
-
 
 class mainWindow(QMainWindow):
-
     def __init__(self, parent=None):
         super(mainWindow, self).__init__(parent)
         self.ui = loadUi('UI/mainFrame.ui', self)
@@ -51,6 +46,7 @@ class mainWindow(QMainWindow):
         self.curOpenProjectHandle = None
         self.openedProject = ProjectQueue()
         self.handleToTabWidget = dict()
+        self.plutoVariables = plutoVariables()
         ###############################
         # menu
         newProjectMenu = self.ui.actionNew_Project
@@ -155,10 +151,10 @@ class mainWindow(QMainWindow):
 
         self.mainLayout.addWidget(self.scrollarea)
 
-        # init projects from PROJECT_PATHS
+        # init projects from plutoVariables projectFiles
         projectHandleList = []
         # projectItemList = []
-        for projectPath in PROJECT_PATHS:
+        for projectPath in self.plutoVariables.projectFiles:
             projectHandle = ProjectReader(projectPath)
             projectHandleList.append(projectHandle)
 
@@ -225,7 +221,8 @@ class mainWindow(QMainWindow):
         projectFile, _ = dialog.getOpenFileName(self, "Open Project", "",
                                                 "Project File (*.pluto);;All Files (*.*)", options=options)
         if projectFile:
-            self.openProject(projectFile)
+            handle = ProjectReader(projectFile)
+            self.openProject(handle)
         else:
             raise Exception('Open project failed')
 

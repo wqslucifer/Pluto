@@ -670,6 +670,7 @@ class initProject(object):
                 # log: script file is not recognized
                 return 'scripts', '00A'
 
+
 class IDGenerator(object):
     def __init__(self):
         self.n_data = 0
