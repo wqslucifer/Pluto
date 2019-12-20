@@ -19,6 +19,7 @@ class newProjectDialog(QDialog):
     # page 1: set project name
     # page 2: add file to data
     # finish
+    projectInited = pyqtSignal(str)
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.layout = QStackedLayout(self)
@@ -317,6 +318,7 @@ class newProjectDialog(QDialog):
     def onFinishButtonClicked(self):
         self.newProject.initProject(os.path.join(self.projectLocation, self.projectName), self.projectName)
         self.accept()
+        self.projectInited.emit(self.newProject.projectFile)
 
     def displayInfo(self, showInfoEdit: QTextEdit):
         showInfoEdit.setText('')

@@ -159,13 +159,14 @@ class mainWindow(QMainWindow):
             projectHandleList.append(projectHandle)
 
             # projectName, projectLocation, lastOpenTime, projectFiles
-            projectItem = ProjectWidget(projectHandle.projectName, projectHandle.projectPath, \
+            projectItem = ProjectWidget(projectHandle.projectName, projectHandle.projectPath,
                                         projectHandle.lastAccessTime, projectHandle)
             projectItem.triggered.connect(self.openProject)
             self.projectListLayout.addWidget(projectItem)
 
     def newProjectDialog(self):
         dialog = newProjectDialog(self)
+        dialog.projectInited.connect(self.onProjectInited)
         dialog.show()
 
     def openProject(self, handle: ProjectReader):
@@ -281,3 +282,7 @@ class mainWindow(QMainWindow):
         info['script'] = handle.scriptSourceHandle.getAllPath()
         info['result'] = []
         return info
+
+    def onProjectInited(self, projectFile: str):
+        handle = ProjectReader(projectFile)
+        self.openProject(handle)
