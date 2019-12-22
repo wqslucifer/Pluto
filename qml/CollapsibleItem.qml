@@ -6,6 +6,7 @@ import QtQuick.Controls.Material 2.2
 
 Item {
     id: rootItem
+    signal sendData(int index, string name)
     property string selectColor: '#81D4FA'
     property string hoverColor: '#6A7FFC'
     property string transparentColor: 'transparent'
@@ -41,6 +42,10 @@ Item {
         console.log(rootItem.height, headerHeight, rootItem.itemHeight, listContent.length)
     }
 
+    function onListItemClicked(index, name){
+        sendData(index, name)
+    }
+
     width: 400
     height: headerHeight
 
@@ -50,6 +55,7 @@ Item {
         anchors.leftMargin: 0
         anchors.fill: parent
         spacing: 0
+        signal getIndex(int index, string name)
         Rectangle {
             id: header
             height: headerHeight
@@ -87,6 +93,10 @@ Item {
             }
         }
 
+        Component.onCompleted: {
+            column.getIndex.connect(onListItemClicked)
+        }
+
         Pane {
             id: collapsiblePane
             anchors.right: parent.right
@@ -105,6 +115,7 @@ Item {
                 ListModel {
                     id: listModel
                 }
+                //onCurrentIndexChanged: onListItemClicked(listView.currentIndex)
             }
             Component{
                 id: delegate
@@ -138,6 +149,7 @@ Item {
                                 height: parent.height
                                 Layout.fillWidth: true
                                 Text {
+                                    id: itemAnchor
                                     text: itemName
                                     font.bold: true
                                     color: textColor
@@ -153,6 +165,7 @@ Item {
                             hoverEnabled: true
                             onClicked: {
                                 listItem.checked = true
+                                column.getIndex(index, itemName)
                                 // listView.currentIndex = index
                             }
                             onEntered: {

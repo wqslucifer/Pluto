@@ -7,6 +7,7 @@ import QtQml.Models 2.2
 
 Rectangle {
     id: root
+    signal sendData(var data)
     property var count: 0
     property var projectID: ''
     property var modelList: []
@@ -16,6 +17,8 @@ Rectangle {
     property var initHeight: 60
     property var projectName: ''
     property var lastAccessTime: ''
+    property var itemClicked: ''
+    property var clickedItemInfo: []
 
     function onInitMainPageItems(PanelItems){
         projectID = PanelItems['ID']
@@ -30,6 +33,28 @@ Rectangle {
         scriptPanel.onInitListItems(scriptList)
 
         root.height = initHeight+modelPanel.height+dataPanel.height+scriptPanel.height+resultPanel.height
+
+    }
+
+    function dataReceiver(index, itemName){
+        clickedItemInfo = ['data', index, itemName]
+        console.log(clickedItemInfo)
+        root.sendData(clickedItemInfo)
+    }
+    function modelReceiver(index, itemName){
+        clickedItemInfo = ['model', index, itemName]
+        console.log(clickedItemInfo)
+        root.sendData(clickedItemInfo)
+    }
+    function scriptReceiver(index, itemName){
+        clickedItemInfo = ['script', index, itemName]
+        console.log(clickedItemInfo)
+        root.sendData(clickedItemInfo)
+    }
+    function resultReceiver(index, itemName){
+        clickedItemInfo = ['result', index, itemName]
+        console.log(clickedItemInfo)
+        root.sendData(clickedItemInfo)
     }
 
     width: 800
@@ -37,6 +62,7 @@ Rectangle {
     radius: 3
     border.width: 4
     color: 'transparent'
+    signal listItemClicked()
 
     Rectangle{
         id: projectInfo
@@ -143,51 +169,42 @@ Rectangle {
             width: root.width
             headerName: 'Model'
             mode: 'Model'
+            Component.onCompleted: {
+                modelPanel.sendData.connect(modelReceiver)
+            }
         }
         CollapsibleItem{
             id: dataPanel
             width: root.width
             headerName: 'Data'
             mode: 'Data'
+            Component.onCompleted: {
+                dataPanel.sendData.connect(dataReceiver)
+            }
         }
         CollapsibleItem{
             id: scriptPanel
             width: root.width
             headerName: 'Script'
             mode: 'Script'
+            Component.onCompleted: {
+                scriptPanel.sendData.connect(scriptReceiver)
+            }
         }
         CollapsibleItem{
             id: resultPanel
             width: root.width
             headerName: 'Result'
             mode: 'Result'
+            Component.onCompleted: {
+                resultPanel.sendData.connect(resultReceiver)
+            }
         }
     }
 
 
-
-
-
 }
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*##^## Designer {
-    D{i:1;anchors_height:200;anchors_width:200}
-}
- ##^##*/

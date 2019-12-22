@@ -265,6 +265,7 @@ class mainWindow(QMainWindow):
         obj_projectMainPage = projectMainPage.rootObject()
         # send main page init dict
         obj_projectMainPage.onInitMainPageItems(self.getProjectDetail(tabManager))
+        obj_projectMainPage.sendData.connect(self.getData_ProjectMainPage)
 
         tabWidget.addTab(projectMainPage, 'MainPage')
         return tabManager
@@ -286,3 +287,7 @@ class mainWindow(QMainWindow):
     def onProjectInited(self, projectFile: str):
         handle = ProjectReader(projectFile)
         self.openProject(handle)
+
+    def getData_ProjectMainPage(self, data):
+        dataType, itemIndex, itemName = data.toVariant()
+        print(dataType, itemIndex, itemName)
