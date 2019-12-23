@@ -33,6 +33,9 @@ warnings.filterwarnings('ignore')
 
 
 class mainWindow(QMainWindow):
+    disableProjectMenu = pyqtSignal()
+    enableProjectMenu = pyqtSignal()
+
     def __init__(self, parent=None):
         super(mainWindow, self).__init__(parent)
         self.ui = loadUi('UI/mainFrame.ui', self)
@@ -47,6 +50,8 @@ class mainWindow(QMainWindow):
         self.openedProject = ProjectQueue()
         self.handleToTabWidget = dict()
         self.plutoVariables = plutoVariables()
+        # flags
+
         ###############################
         # menu
         newProjectMenu = self.ui.actionNew_Project
@@ -55,6 +60,17 @@ class mainWindow(QMainWindow):
         openProjectMenu.triggered.connect(self.openProjectDialog)
         saveProjectMenu = self.ui.actionSave_Project
         saveProjectMenu.triggered.connect(self.saveProject)
+
+        self.newProjectDataSetMenu = self.ui.actionNew_DataSet
+        self.newProjectDataSetMenu.triggered.connect(self.onNewProjectDataSetMenu)
+        self.newProjectModel = self.ui.actionNew_Model
+        self.newProjectModel.triggered.connect(self.onNewProjectModel)
+        self.newProjectScript = self.ui.actionNew_Script
+        self.newProjectScript.triggered.connect(self.onNewProjectScript)
+
+        self.newProjectDataSetMenu.setEnabled(False)
+        self.newProjectModel.setEnabled(False)
+        self.newProjectScript.setEnabled(False)
         ###############################
         # init toolbar status bar
         self.toolBar = QToolBar(self)
@@ -128,6 +144,10 @@ class mainWindow(QMainWindow):
         # init main stage
         self.initProjectList()
 
+        # connect
+        self.disableProjectMenu.connect(self.onDisableProjectMenu)
+        self.enableProjectMenu.connect(self.onEnableProjectMenu)
+
     def initToolBar(self):
         self.statusBar.setContentsMargins(10, 0, 0, 10)
         self.addToolBar(self.toolBar)
@@ -187,6 +207,7 @@ class mainWindow(QMainWindow):
             self.mainLayout.setCurrentIndex(self.openedProject.currentIndex)
             self.curOpenProjectHandle = self.openedProject.getHandle(self.openedProject.currentIndex)
             self.updateProjectLastAccessTime()
+            self.enableProjectMenu.emit()
 
     def closeProject(self):
         if self.curOpenProjectHandle:
@@ -233,6 +254,7 @@ class mainWindow(QMainWindow):
 
     def jumpToHomePage(self):
         self.mainLayout.setCurrentIndex(0)
+        self.disableProjectMenu.emit()
 
     def showOpenProject(self):
         # display a pop menu of current open project
@@ -255,6 +277,8 @@ class mainWindow(QMainWindow):
     def showProjectPage(self, index):
         # show opened project page using index
         self.mainLayout.setCurrentIndex(index)
+        self.curOpenProjectHandle = self.openedProject.getHandle(index)
+        self.enableProjectMenu.emit()
 
     def initTabWidget(self, tabWidget: ColorTabWidget, handle: ProjectReader):
         tabManager = TabManager(tabWidget, handle)
@@ -304,3 +328,22 @@ class mainWindow(QMainWindow):
 
     def onHSplitterMoved(self, pos: int, index: int):
         self.downSize = self.height() - pos
+
+    def onDisableProjectMenu(self):
+        self.newProjectDataSetMenu.setEnabled(False)
+        self.newProjectModel.setEnabled(False)
+        self.newProjectScript.setEnabled(False)
+
+    def onEnableProjectMenu(self):
+        self.newProjectDataSetMenu.setEnabled(True)
+        self.newProjectModel.setEnabled(True)
+        self.newProjectScript.setEnabled(True)
+
+    def onNewProjectDataSetMenu(self):
+        pass
+
+    def onNewProjectModel(self):
+        pass
+
+    def onNewProjectScript(self):
+        pass
