@@ -74,6 +74,7 @@ class mainWindow(QMainWindow):
         # splitter
         self.vertical_splitter = QSplitter(Qt.Horizontal)
         self.horizontal_splitter = QSplitter(Qt.Vertical)
+        self.downSize = 0.22 * self.height()
         ###############################
         # left stage
         self.leftTreeView = QTreeView(self)
@@ -107,7 +108,10 @@ class mainWindow(QMainWindow):
         self.horizontal_splitter.setCollapsible(1, False)
 
         self.vertical_splitter.setSizes([self.width() * 0.22, self.width() * 0.78])
-        self.horizontal_splitter.setSizes([self.height() * 0.78, self.height() * 0.22])
+        # self.horizontal_splitter.setSizes([self.height() * 0.78, self.height() * 0.22])
+        self.horizontal_splitter.setSizes([self.height() - self.downSize, self.downSize])
+
+        self.horizontal_splitter.splitterMoved.connect(self.onHSplitterMoved)
 
         self.mainWidgetLayout.addWidget(self.horizontal_splitter)
         self.bottomStage.setLayout(self.bottomLayout)
@@ -291,3 +295,12 @@ class mainWindow(QMainWindow):
     def getData_ProjectMainPage(self, data):
         dataType, itemIndex, itemName = data.toVariant()
         print(dataType, itemIndex, itemName)
+
+    def changeEvent(self, e: QEvent) -> None:
+        if e.type() == QEvent.WindowStateChange and self.windowState() == Qt.WindowMaximized:
+            self.horizontal_splitter.setSizes([self.height() - self.downSize, self.downSize])
+        elif e.type() == QEvent.WindowStateChange and self.windowState() == Qt.WindowNoState:
+            self.horizontal_splitter.setSizes([self.height() - self.downSize, self.downSize])
+
+    def onHSplitterMoved(self, pos: int, index: int):
+        self.downSize = self.height() - pos
