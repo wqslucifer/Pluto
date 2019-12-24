@@ -23,6 +23,7 @@ from PyQt5.uic import loadUi
 from core.customLayout import FlowLayout
 from core.customWidget import ProjectWidget, CollapsibleTabWidget, RollingLabel, ColorTabWidget
 from core.dialogs.newProjectDialog import newProjectDialog
+from core.dialogs.newPlutoDSDialog import newPlutoDSDialog
 from utls.yamlReader import ProjectReader
 from utls.structure import Queue, ProjectQueue, TabManager
 from utls.setting import plutoVariables
@@ -340,7 +341,8 @@ class mainWindow(QMainWindow):
         self.newProjectScript.setEnabled(True)
 
     def onNewProjectDataSetMenu(self):
-        pass
+        dialog = newPlutoDSDialog(self.curOpenProjectHandle, self)
+        dialog.show()
 
     def onNewProjectModel(self):
         pass

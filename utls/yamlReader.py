@@ -195,7 +195,6 @@ class dataSourceReader(sourceReader):
             'EE': 'otherImageDir',
             'FF': 'plutoDataSets',
         }
-
         # local storage
         self.dataSourceWeb = None
         self.csvFiles = {}
@@ -274,6 +273,17 @@ class dataSourceReader(sourceReader):
         self.imageDirs[uid] = imageDir
         self.raw_data['imageDirs'] = self.imageDirs
         self.updateToYaml()
+
+    def getAllData(self):
+        return [self.csvFiles, self.imageDirs, self.plutoDataSets]
+
+    def parseCode(self, code):
+        if code[2] == 'F':
+            # classified
+            return self.code[code[:2]]
+        elif code[2] == 'A':
+            # unclassified file
+            return 'not classified'
 
 
 class scriptSourceReader(sourceReader):

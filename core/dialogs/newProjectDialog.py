@@ -1,6 +1,6 @@
 import os
 
-from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QSize
+from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QSize, QDir
 from PyQt5.QtWidgets import QDialog, QWidget, QLineEdit, QPushButton, QLayout, QVBoxLayout, QHBoxLayout, QStackedLayout, \
     QStackedWidget, QLabel, QFrame, QFileDialog, QMessageBox, QTextEdit, QSizePolicy, QListView, QAbstractItemView, \
     QTreeView
@@ -212,7 +212,7 @@ class newProjectDialog(QDialog):
         if new_location:
             self.projectLocation = new_location
             if self.projectName:
-                self.locationEdit.setText(self.projectLocation + '/' + self.projectName)
+                self.locationEdit.setText(QDir.cleanPath(self.projectLocation + '/' + self.projectName))
             else:
                 self.locationEdit.setText(self.projectLocation)
 
