@@ -1,0 +1,14 @@
+cacheLoc: ''
+dataDescribe: ''
+dataFiles:
+  00FF0000: E:\project\Pluto\test\testProject_1\data\train.csv
+  02FF0000: E:\project\Pluto\test\testProject_1\data\other.csv
+  0AFF0000: E:\project\Pluto\test\testProject_1\data\sample_submission.csv
+dataSource: E:\project\Pluto\test\testProject_1\data\dataSource.source
+lastUpdateTime: 2019-12-25 04:09:31.865899
+preprocessScript:
+  00FF0000: E:\project\Pluto\test\testProject_1\script\preprocessScript.sc
+  01FF0000: E:\project\Pluto\test\testProject_1\script\postprocessScript.sc
+  20FF0000: E:\project\Pluto\test\testProject_1\script\visualizationScript.sc
+  41FF0000: E:\project\Pluto\test\testProject_1\script\xgboost.sc
+scriptSource: E:\project\Pluto\test\testProject_1\script\scriptSource.source
