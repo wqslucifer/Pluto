@@ -320,6 +320,7 @@ class scriptSourceReader(sourceReader):
         # local storage
         self.raw_data = None
         self.lastUpdateTime = None
+        self.scripts = {}
         self.processScripts = {}
         self.visualizeScripts = {}
         self.modelScripts = {}
@@ -354,6 +355,17 @@ class scriptSourceReader(sourceReader):
         else:
             self.__logger.error('unknown script type: ' + str(scriptType))
         self.updateToYaml()
+
+    def parseCode(self, code):
+        if code[2] == 'F':
+            # classified
+            return self.scriptCode[code[:2]]
+        elif code[2] == 'A':
+            # unclassified file
+            return 'not classified'
+
+    def getAllScript(self):
+        return [self.scripts, self.processScripts, self.visualizeScripts, self.modelScripts]
 
 
 class modelSourceReader(sourceReader):
@@ -423,7 +435,7 @@ class modelSourceReader(sourceReader):
 
 
 class dataLoader(object):
-    def __init__(self, yamlFile):
+    def __init__(self, yamlFile=None):
         self.code = {
             '00': 'train_csv',
             '01': 'test_csv',
@@ -438,7 +450,6 @@ class dataLoader(object):
         self.lastUpdateTime = None
         self.dataSource = None
         self.scriptSource = None
-        self.dataType = None
         self.dataFiles = None
         self.dataDescribe = None
         self.preprocessScript = None
@@ -448,29 +459,40 @@ class dataLoader(object):
         self.loadData(yamlFile)
 
     def loadData(self, yamlFile):
+        if not yamlFile:
+            return
         with open(yamlFile, 'r') as f:
             try:
                 self.raw_data = yaml.safe_load(f)
                 self.lastUpdateTime = self.raw_data['lastUpdateTime']
                 self.dataSource = self.raw_data['dataSource']
                 self.scriptSource = self.raw_data['scriptSource']
-                self.dataType = self.raw_data['dataType']
                 self.dataFiles = self.raw_data['dataFiles']
                 self.dataDescribe = self.raw_data['dataDescribe']
                 self.preprocessScript = self.raw_data['preprocessScript']
             except yaml.YAMLError:
                 self.__logger.error('yaml file error: ' + yamlFile)
 
-    def saveToYaml(self):
+    def saveToYaml(self, newYamlFile=None):
+        if newYamlFile:
+            self.yamlFile = newYamlFile
         self.raw_data['lastUpdateTime'] = self.lastUpdateTime
         self.raw_data['dataSource'] = self.dataSource
         self.raw_data['scriptSource'] = self.scriptSource
-        self.raw_data['dataType'] = self.dataType
         self.raw_data['dataFiles'] = self.dataFiles
         self.raw_data['dataDescribe'] = self.dataDescribe
         self.raw_data['preprocessScript'] = self.preprocessScript
         with open(self.yamlFile, 'w') as f:
             yaml.safe_dump(self.raw_data, f, default_flow_style=False)
+
+    def initFromDS(self, ds):
+        self.raw_data = ds
+        self.lastUpdateTime = self.raw_data['lastUpdateTime']
+        self.dataSource = self.raw_data['dataSource']
+        self.scriptSource = self.raw_data['scriptSource']
+        self.dataFiles = self.raw_data['dataFiles']
+        self.dataDescribe = self.raw_data['dataDescribe']
+        self.preprocessScript = self.raw_data['preprocessScript']
 
 
 class modelLoader(object):
