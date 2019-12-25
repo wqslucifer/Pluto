@@ -10,5 +10,5 @@ imageDirs:
 lastUpdateTime: 2019-11-09 22:23:43.079325
 plutoDataSet:
   FFF00008: E:\project\Pluto\test\testProject_1\data\add.ds
-  FFFF0000: E:\project\Pluto\test\testProject_1\data\train_data.ds
+  FFFF0000: E:\project\Pluto\test\testProject_1\data\trainDataset.ds
 totalSize: 980 MB

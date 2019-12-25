@@ -24,7 +24,7 @@ from core.customLayout import FlowLayout
 from core.customWidget import ProjectWidget, CollapsibleTabWidget, RollingLabel, ColorTabWidget
 from core.dialogs.newProjectDialog import newProjectDialog
 from core.dialogs.newPlutoDSDialog import newPlutoDSDialog
-from utls.yamlReader import ProjectReader
+from utls.yamlReader import ProjectReader, dataLoader, dataSourceReader
 from utls.structure import Queue, ProjectQueue, TabManager
 from utls.setting import plutoVariables
 
@@ -296,7 +296,7 @@ class mainWindow(QMainWindow):
         obj_projectMainPage.sendData.connect(self.getData_ProjectMainPage)
         tabManager.qmlHandle = obj_projectMainPage
         tabManager.qmlWidget = projectMainPage
-        tabWidget.addTab(projectMainPage, 'MainPage')
+        tabWidget.addTab(projectMainPage, 'MainPage:MainPage')
         return tabManager
 
     @staticmethod
@@ -319,7 +319,10 @@ class mainWindow(QMainWindow):
 
     def getData_ProjectMainPage(self, data):
         dataType, itemIndex, itemName = data.toVariant()
-        print(dataType, itemIndex, itemName)
+        # print(dataType, itemIndex, itemName)
+        if dataType == 'data':
+            handle = dataLoader(itemName)
+            self.openDSEditor(handle)
 
     def changeEvent(self, e: QEvent) -> None:
         if e.type() == QEvent.WindowStateChange and self.windowState() == Qt.WindowMaximized:
@@ -346,9 +349,30 @@ class mainWindow(QMainWindow):
         if r == QDialog.Accepted:
             obj_projectMainPage = self.curProjectTabManager.qmlWidget.rootObject()
             obj_projectMainPage.addData(dialog.target)
+            handle = dataLoader(dialog.target)
+            self.openDSEditor(handle)
 
     def onNewProjectModel(self):
         pass
 
     def onNewProjectScript(self):
         pass
+
+    def openDSEditor(self, DSHandle):
+        tabManager = self.curProjectTabManager
+        tabWidget = tabManager.tabWidget
+        if DSHandle.yamlFile in tabManager.dataTabs:
+            print(tabManager.dataTabs[DSHandle.yamlFile])
+            tabWidget.setCurrentIndex(tabManager.dataTabs[DSHandle.yamlFile][0])
+        else:
+            widget, title = self.DSEditor(DSHandle, tabWidget)
+            tabWidget.addTab(widget, title)
+            tabManager.dataTabs[DSHandle.yamlFile] = tabWidget.count() - 1, widget
+            tabWidget.setCurrentIndex(tabWidget.count() - 1)
+
+    def DSEditor(self, DSHandle: dataLoader, parent=None):
+        handle = DSHandle
+        widget = QWidget(parent)
+        title = 'Data:' + QDir(handle.yamlFile).dirName()
+
+        return widget, title

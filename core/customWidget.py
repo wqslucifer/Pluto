@@ -532,9 +532,11 @@ class ColorTabBar(QTabBar):
 
         for i in range(self.count()):
             self.initStyleOption(opt, i)
-            if opt.text in self.mColors:
+            key, name = opt.text.split(':')
+            if key in self.mColors:
+                opt.text = name
                 opt.palette.setColor(
-                    QPalette.Button, self.mColors[opt.text]
+                    QPalette.Button, self.mColors[key]
                 )
             painter.drawControl(QStyle.CE_TabBarTabShape, opt)
             painter.drawControl(QStyle.CE_TabBarTabLabel, opt)
@@ -544,11 +546,11 @@ class ColorTabWidget(QTabWidget):
     def __init__(self, parent=None):
         super(ColorTabWidget, self).__init__(parent)
         d = {
-            "Model: ": QColor("#ff8566"),  # red
-            "Data: ": QColor("#ffe680"),  # yellow
-            "Script: ": QColor("#b3ff99"),  # green
-            "Result: ": QColor("#80ccff"),  # blue
-            "Run: ": QColor("#aa80ff"),  # pink
+            "Model": QColor("#ff8566"),  # red
+            "Data": QColor("#ffe680"),  # yellow
+            "Script": QColor("#b3ff99"),  # green
+            "Result": QColor("#80ccff"),  # blue
+            "Run": QColor("#aa80ff"),  # pink
             "MainPage": QColor("#eb99ff"),  #
         }
         self.setTabBar(ColorTabBar(d))

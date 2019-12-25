@@ -67,10 +67,10 @@ class TabManager(object):
         self.qmlWidget = None
         # tab manage
         self.mainPageWidget = None
-        self.modelTabs = []
-        self.dataTabs = []
-        self.resultTabs = []
-        self.runTabs = []
+        self.modelTabs = {}
+        self.dataTabs = {}
+        self.resultTabs = {}
+        self.runTabs = {}
 
     def setMainPageWidget(self, widget):
         self.mainPageWidget = widget
