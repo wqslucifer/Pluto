@@ -28,7 +28,7 @@ Item {
     }
     function onInitListItems(listContent){
         for(var i=0; i<listContent.length; i++){
-            console.log(listContent[i])
+            //console.log(listContent[i])
             if(i%2===0){
                 listModel.append({itemName:listContent[i], cellColor:itemColor1})
             }
@@ -39,7 +39,18 @@ Item {
         }
         rootItem.height = headerHeight + rootItem.itemHeight * listContent.length
         collapsiblePane.height = rootItem.itemHeight * listContent.length
-        console.log(rootItem.height, headerHeight, rootItem.itemHeight, listContent.length)
+        //console.log(rootItem.height, headerHeight, rootItem.itemHeight, listContent.length)
+    }
+
+    function addItem(name){
+        if ((listModel.count)%2===0){
+            listModel.append({itemName:name, cellColor:itemColor1})
+        }
+        else{
+            listModel.append({itemName:name, cellColor:itemColor2})
+        }
+        rootItem.height = headerHeight + rootItem.itemHeight * listModel.count
+        collapsiblePane.height = rootItem.itemHeight * listModel.count
     }
 
     function onListItemClicked(index, name){

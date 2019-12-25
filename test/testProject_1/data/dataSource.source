@@ -1,15 +1,14 @@
-lastUpdateTime: 2019-11-09 22:23:43.079325
-dataSourceWeb: 'http:\\www.source.com\data\'
-totalSize: '980 MB'
 csvFiles:
-  00FF0000: 'E:\project\Pluto\test\testProject_1\data\train.csv'
-  01FF0000: 'E:\project\Pluto\test\testProject_1\data\test.csv'
-  02FF0000: 'E:\project\Pluto\test\testProject_1\data\other.csv'
-  0AFF0000: 'E:\project\Pluto\test\testProject_1\data\sample_submission.csv'
-
+  00FF0000: E:\project\Pluto\test\testProject_1\data\train.csv
+  01FF0000: E:\project\Pluto\test\testProject_1\data\test.csv
+  02FF0000: E:\project\Pluto\test\testProject_1\data\other.csv
+  0AFF0000: E:\project\Pluto\test\testProject_1\data\sample_submission.csv
+dataSourceWeb: http:\\www.source.com\data\
 imageDirs:
-  CCFF0000: 'E:\project\Pluto\test\testProject_1\data\train_images'
-  DDFF0000: 'E:\project\Pluto\test\testProject_1\data\test_images'
-
+  CCFF0000: E:\project\Pluto\test\testProject_1\data\train_images
+  DDFF0000: E:\project\Pluto\test\testProject_1\data\test_images
+lastUpdateTime: 2019-11-09 22:23:43.079325
 plutoDataSet:
-  FFFF0000: 'E:\project\Pluto\test\testProject_1\data\train_data.ds'
+  FFF00008: E:\project\Pluto\test\testProject_1\data\add.ds
+  FFFF0000: E:\project\Pluto\test\testProject_1\data\train_data.ds
+totalSize: 980 MB

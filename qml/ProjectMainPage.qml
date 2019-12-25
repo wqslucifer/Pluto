@@ -33,7 +33,11 @@ Rectangle {
         scriptPanel.onInitListItems(scriptList)
 
         root.height = initHeight+modelPanel.height+dataPanel.height+scriptPanel.height+resultPanel.height
+        root.update()
+    }
 
+    function addData(name){
+        dataPanel.addItem(name)
     }
 
     function dataReceiver(index, itemName){

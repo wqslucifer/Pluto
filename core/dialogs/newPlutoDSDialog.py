@@ -40,6 +40,7 @@ class newPlutoDSDialog(QDialog):
         self.tableModel = None
 
         # local variables
+        self.target = None
         self.dsHandle = None
         self.plutoVariables = plutoVariables()
         self.projectLocation = self.plutoVariables.projectHome
@@ -172,7 +173,15 @@ class newPlutoDSDialog(QDialog):
         ds = self.createPlutoDS()
         self.dsHandle = dataLoader()
         self.dsHandle.initFromDS(ds)
-        self.dsHandle.saveToYaml(os.path.join(self.dsLocation, self.dsName + '.ds'))
+        self.target = os.path.join(self.dsLocation, self.dsName + '.ds')
+        self.dsHandle.saveToYaml(self.target)
+        seq = next(self.projectHandle.id_generator.genID('D'))
+        typeCode = 'FF'
+        uid = typeCode + 'F' + seq
+        while self.projectHandle.dataSourceHandle.checkUID(uid):
+            seq = next(self.projectHandle.id_generator.genID('D'))
+            uid = typeCode + 'F' + seq
+        self.projectHandle.dataSourceHandle.addDSFile(uid, self.target)
         self.accept()
 
     def onLocationButtonClicked(self):

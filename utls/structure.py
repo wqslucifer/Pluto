@@ -17,8 +17,8 @@ class ProjectQueue(object):
         else:
             return False
 
-    def add(self, handle):
-        self.projectDict[handle.yamlFile] = handle
+    def add(self, handle, tabManager):
+        self.projectDict[handle.yamlFile] = handle, tabManager
         self.project_index.append(handle.yamlFile)
         self.currentIndex += 1
         self.length += 1
@@ -63,6 +63,8 @@ class TabManager(object):
     def __init__(self, tabWidget, handle):
         self.handle = handle
         self.tabWidget = tabWidget
+        self.qmlHandle = None
+        self.qmlWidget = None
         # tab manage
         self.mainPageWidget = None
         self.modelTabs = []

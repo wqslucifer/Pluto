@@ -34,9 +34,12 @@ class ProjectReader(object):
         self.dataSource = None
         self.modelSource = None
         self.scriptSource = None
+        self.resultSource = None
         self.dataSourceHandle = None
         self.modelSourceHandle = None
         self.scriptSourceHandle = None
+        self.resultSourceHandle = None
+        self.id_generator = None
         self.loadProject(yamlFile)
         self.__logger = logging.getLogger('debug')
         self.__logger.setLevel(logging.INFO)
@@ -89,12 +92,17 @@ class ProjectReader(object):
                 self.dataSource = self.raw_project['dataSource']
                 self.modelSource = self.raw_project['modelSource']
                 self.scriptSource = self.raw_project['scriptSource']
+                self.resultSource = self.raw_project['resultSource']
                 if self.dataSource:
                     self.loadDataSource()
                 if self.modelSource:
                     self.loadModelSource()
                 if self.scriptSource:
                     self.loadScriptSource()
+                if self.resultSource:
+                    self.loadResultSource()
+                self.id_generator = IDGenerator(self.dataSourceHandle, self.modelSourceHandle, self.scriptSourceHandle,
+                                                self.resultSourceHandle)
             except yaml.YAMLError:
                 self.__logger.error('yaml file error: ' + yamlFile)
 
@@ -106,6 +114,9 @@ class ProjectReader(object):
 
     def loadScriptSource(self):
         self.scriptSourceHandle = scriptSourceReader(self.scriptSource)
+
+    def loadResultSource(self):
+        self.resultSourceHandle = resultSourceReader(self.resultSource)
 
     def setLastAccessTime(self, time: datetime):
         # set property
@@ -201,9 +212,11 @@ class dataSourceReader(sourceReader):
         self.imageDirs = {}
         self.plutoDataSets = {}
         self.totalSize = ''
-
         # load yaml file
         self.loadYaml()
+
+    def __len__(self):
+        return len(self.csvFiles) + len(self.imageDirs) + len(self.plutoDataSets)
 
     def parseCSVFiles(self):
         parsedCSVDict = {
@@ -274,6 +287,11 @@ class dataSourceReader(sourceReader):
         self.raw_data['imageDirs'] = self.imageDirs
         self.updateToYaml()
 
+    def addDSFile(self, uid: str, filePath: str):
+        self.plutoDataSets[uid] = filePath
+        self.raw_data['plutoDataSet'] = self.plutoDataSets
+        self.updateToYaml()
+
     def getAllData(self):
         return [self.csvFiles, self.imageDirs, self.plutoDataSets]
 
@@ -285,6 +303,11 @@ class dataSourceReader(sourceReader):
             # unclassified file
             return 'not classified'
 
+    def checkUID(self, uid):  # return True if uid in checkUID
+        for d in self.fileClassList:
+            if uid in d:
+                return True
+        return False
 
 class scriptSourceReader(sourceReader):
     def __init__(self, yamlFile):
@@ -329,6 +352,9 @@ class scriptSourceReader(sourceReader):
         self.__logger.setLevel(logging.INFO)
         # load yaml file
         self.loadYaml()
+
+    def __len__(self):
+        return len(self.scripts) + len(self.processScripts) + len(self.visualizeScripts) + len(self.modelScripts)
 
     def loadYaml(self):
         with open(self.yamlFile, 'r') as f:
@@ -398,22 +424,26 @@ class modelSourceReader(sourceReader):
         # local storage
         self.raw_data = None
         self.lastUpdateTime = None
-        self.DL_classification = {}
-        self.DL_segmentation = {}
-        self.ML_model = {}
+        self.DL_classification = dict()
+        self.DL_segmentation = dict()
+        self.ML_model = dict()
         # logger
         self.__logger = logging.getLogger('debug')
         self.__logger.setLevel(logging.INFO)
         # load yaml file
         self.loadYaml()
 
+    def __len__(self):
+        return len(self.DL_classification) + len(self.DL_segmentation) + len(self.ML_model)
+
     def loadYaml(self):
         with open(self.yamlFile, 'r') as f:
             try:
                 self.raw_data = yaml.safe_load(f)
                 self.lastUpdateTime = self.raw_data['lastUpdateTime']
-                self.DL_classification = self.raw_data['DL_classification']
-                self.DL_segmentation = self.raw_data['DL_segmentation']
+                self.DL_classification = self.raw_data['DL_classification'] if self.raw_data[
+                    'DL_classification'] else dict()
+                self.DL_segmentation = self.raw_data['DL_segmentation'] if self.raw_data['DL_segmentation'] else dict()
                 self.ML_model = self.raw_data['ML_model']
                 super().setFileClassList(self.DL_classification, self.DL_segmentation, self.ML_model)
             except yaml.YAMLError:
@@ -432,6 +462,55 @@ class modelSourceReader(sourceReader):
         else:
             self.__logger.error('unknown script type: ' + str(modelType))
         self.updateToYaml()
+
+
+class resultSourceReader(sourceReader):
+    def __init__(self, yamlFile):
+        super().__init__(yamlFile)
+        self.resultCode = {
+            '40': 'lightgbm',
+            '41': 'xgboost',
+            '42': 'catboost',
+            '43': 'linear',
+            '44': 'randomForest',
+            'A0': 'vgg',
+            'A1': 'resnet',
+            'A2': 'inception',
+            'A3': 'inceptionResnet',
+            'A4': 'densenet',
+            'A5': 'mobilenet',
+            'A6': 'xception',
+            'A7': 'squeezenet',
+            'A8': 'googlenet',
+            'A9': 'se_resnet',
+            'AA': 'senet',
+            'AB': 'efficientnet',
+            'C0': 'unet',
+            'C1': 'FPN',
+            'C2': 'PSPNet',
+            'C3': 'Linknet',
+        }
+        self.yamlFile = yamlFile
+        # local storage
+        self.raw_data = None
+        self.lastUpdateTime = None
+        # logger
+        self.__logger = logging.getLogger('debug')
+        self.__logger.setLevel(logging.INFO)
+        # load yaml file
+        self.loadYaml()
+
+    def __len__(self):
+        return 0
+
+    def loadYaml(self):
+        with open(self.yamlFile, 'r') as f:
+            try:
+                self.raw_data = yaml.safe_load(f)
+                self.lastUpdateTime = self.raw_data['lastUpdateTime']
+                # super().setFileClassList(self.DL_classification, self.DL_segmentation, self.ML_model)
+            except yaml.YAMLError:
+                self.__logger.error('yaml file error: ' + self.yamlFile)
 
 
 class dataLoader(object):
@@ -704,11 +783,30 @@ class initProject(object):
 
 
 class IDGenerator(object):
-    def __init__(self):
+    def __init__(self, data=None, script=None, model=None, result=None):
         self.n_data = 0
         self.n_script = 0
         self.n_model = 0
         self.n_result = 0
+
+        if data:
+            self.n_data = len(data)
+        if script:
+            self.n_script = len(script)
+        if model:
+            self.n_model = len(model)
+        if result:
+            self.n_result = len(result)
+
+    def init(self, data=None, script=None, model=None, result=None):
+        if data:
+            self.n_data = len(data)
+        if script:
+            self.n_script = len(script)
+        if model:
+            self.n_model = len(model)
+        if result:
+            self.n_result = len(result)
 
     def genID(self, t='D'):
         while True:

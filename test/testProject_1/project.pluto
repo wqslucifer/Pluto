@@ -39,3 +39,4 @@ projectPath: E:\project\Pluto\test\testProject_1
 dataSource: E:\project\Pluto\test\testProject_1\data\dataSource.source
 modelSource: E:\project\Pluto\test\testProject_1\model\modelSource.source
 scriptSource: E:\project\Pluto\test\testProject_1\script\scriptSource.source
+resultSource: E:\project\Pluto\test\testProject_1\result\resultSource.source

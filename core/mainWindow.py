@@ -48,6 +48,7 @@ class mainWindow(QMainWindow):
         # local variables
         self.defaultDir = '.'
         self.curOpenProjectHandle = None
+        self.curProjectTabManager = None
         self.openedProject = ProjectQueue()
         self.handleToTabWidget = dict()
         self.plutoVariables = plutoVariables()
@@ -199,14 +200,13 @@ class mainWindow(QMainWindow):
             QMessageBox.information(self, 'open project', "project \"" + handle.projectName + "\" has been opened")
         else:
             print('open project:', handle.projectName)
-            self.openedProject.add(handle)
             tabWidget = ColorTabWidget(self)
             tabManager = self.initTabWidget(tabWidget, handle)
-            self.handleToTabWidget[handle.yamlFile] = tabManager
+            self.openedProject.add(handle, tabManager)
             self.mainLayout.addWidget(tabWidget)
-
             self.mainLayout.setCurrentIndex(self.openedProject.currentIndex)
-            self.curOpenProjectHandle = self.openedProject.getHandle(self.openedProject.currentIndex)
+            self.curOpenProjectHandle = handle  # self.openedProject.getHandle(self.openedProject.currentIndex)
+            self.curProjectTabManager = tabManager
             self.updateProjectLastAccessTime()
             self.enableProjectMenu.emit()
 
@@ -278,12 +278,11 @@ class mainWindow(QMainWindow):
     def showProjectPage(self, index):
         # show opened project page using index
         self.mainLayout.setCurrentIndex(index)
-        self.curOpenProjectHandle = self.openedProject.getHandle(index)
+        self.curOpenProjectHandle, self.curProjectTabManager = self.openedProject.getHandle(index)
         self.enableProjectMenu.emit()
 
     def initTabWidget(self, tabWidget: ColorTabWidget, handle: ProjectReader):
         tabManager = TabManager(tabWidget, handle)
-
         # init qml main page list
         projectMainPage = QQuickWidget(tabWidget)
         projectMainPage.setResizeMode(QQuickWidget.SizeRootObjectToView)
@@ -295,7 +294,8 @@ class mainWindow(QMainWindow):
         # send main page init dict
         obj_projectMainPage.onInitMainPageItems(self.getProjectDetail(tabManager))
         obj_projectMainPage.sendData.connect(self.getData_ProjectMainPage)
-
+        tabManager.qmlHandle = obj_projectMainPage
+        tabManager.qmlWidget = projectMainPage
         tabWidget.addTab(projectMainPage, 'MainPage')
         return tabManager
 
@@ -342,7 +342,10 @@ class mainWindow(QMainWindow):
 
     def onNewProjectDataSetMenu(self):
         dialog = newPlutoDSDialog(self.curOpenProjectHandle, self)
-        dialog.show()
+        r = dialog.exec()
+        if r == QDialog.Accepted:
+            obj_projectMainPage = self.curProjectTabManager.qmlWidget.rootObject()
+            obj_projectMainPage.addData(dialog.target)
 
     def onNewProjectModel(self):
         pass
